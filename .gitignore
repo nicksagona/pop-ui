@@ -1,0 +1,7 @@
+composer.lock
+package-lock.json
+/vendor
+/public/assets/fonts
+/public/assets/app.*
+/node_modules
+/npm-debug.log

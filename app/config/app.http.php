@@ -6,8 +6,12 @@ return [
             'controller' => 'Pop\Ui\Http\Controller\IndexController',
             'action'     => 'index'
         ],
-        '/export[/]'  => [
-            'controller' => 'Pop\Ui\Http\Controller\IndexController',
+        '/users[/]'  => [
+            'controller' => 'Pop\Ui\Http\Controller\UsersController',
+            'action'     => 'index'
+        ],
+        '/users/export[/]'  => [
+            'controller' => 'Pop\Ui\Http\Controller\UsersController',
             'action'     => 'export'
         ],
         '*'    => [
@@ -22,6 +26,5 @@ return [
         'Content-Type'                 => 'application/json'
     ],
     'pagination' => 20,
-    'numbered'   => true,
-    'no_results' => 'There are currently no results.'
+    'numbered'   => true
 ];

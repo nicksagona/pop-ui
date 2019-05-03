@@ -2,8 +2,6 @@
 
 namespace Pop\Ui\Http\Controller;
 
-use Pop\Csv\Csv;
-
 class IndexController extends AbstractController
 {
 
@@ -15,20 +13,7 @@ class IndexController extends AbstractController
     public function index()
     {
         $this->prepareView('index.phtml');
-        $this->view->title = 'Pop UI';
-
-        $this->send();
-    }
-
-    /**
-     * Export action
-     *
-     * @return void
-     */
-    public function export()
-    {
-        $this->prepareView('index.phtml');
-        $this->view->title = 'Pop UI : Export';
+        $this->view->title = 'Home';
 
         $this->send();
     }

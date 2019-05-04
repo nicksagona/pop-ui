@@ -132,7 +132,6 @@ var popUi = {
             sort = (sort.substring(0, 1) == '-') ? sort.substring(1) : '-' + sort;
         }
         return sort;
-
     },
 
     convertCase : function(str) {
@@ -153,25 +152,26 @@ var popUi = {
 
 $(document).ready(function(){
     if ($('#results')[0] != undefined) {
+        // Fetch initial result set
         popUi.fetchResults();
-    }
 
-    // On window scroll
-    $(window).scroll(function() {
-        if (($(window).height() + $(window).scrollTop()) == $(document).height()) {
-            if (parseInt($('#results-count')[0].innerHTML) > $('#results > tbody > tr').length) {
-                $('#loading').css('background-image', 'url(/assets/img/loading.gif)');
+        // On window scroll, fetch the next page
+        $(window).scroll(function() {
+            if (($(window).height() + $(window).scrollTop()) == $(document).height()) {
+                if (parseInt($('#results-count')[0].innerHTML) > $('#results > tbody > tr').length) {
+                    $('#loading').css('background-image', 'url(/assets/img/loading.gif)');
 
+                    popUi.bottom = false;
+                    var page     = $('#results').attr('data-page');
+                    page         = parseInt(page) + 1;
+
+                    $('#results').attr('data-page', page);
+                    popUi.fetchResults();
+                }
+                popUi.bottom = true;
+            } else {
                 popUi.bottom = false;
-                var page        = $('#results').attr('data-page');
-                page            = parseInt(page) + 1;
-
-                $('#results').attr('data-page', page);
-                popUi.fetchResults();
             }
-            popUi.bottom = true;
-        } else {
-            popUi.bottom = false;
-        }
-    });
+        });
+    }
 });

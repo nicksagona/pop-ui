@@ -25,6 +25,5 @@ return [
         'Access-Control-Allow-Methods' => 'HEAD, OPTIONS, GET, PUT, POST, PATCH, DELETE',
         'Content-Type'                 => 'application/json'
     ],
-    'pagination' => 20,
-    'numbered'   => true
+    'limit' => 25
 ];

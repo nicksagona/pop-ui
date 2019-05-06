@@ -79,4 +79,13 @@ table th {
   height: 50px;
   background-position: center;
   background-repeat: no-repeat;
+  display: none;
+}
+
+#no-results {
+  clear: both;
+  margin: 0 auto;
+  padding: 25px;
+  border: solid 1px #ddd;
+  display: none;
 }

@@ -6,17 +6,18 @@ var popUi = {
     bottom : false,
 
     fetchResults : function() {
-        var url       = $('#results').attr('data-url');
-        var page      = $('#results').attr('data-page');
-        var limit     = $('#results').attr('data-limit');
-        var sort      = $('#results').attr('data-sort');
-        var filter    = $('#results').attr('data-filter');
-        var fields    = $('#results').attr('data-fields');
-        var fieldsAry = [];
-        var allFields = [];
-        var numbered  = $('#results').attr('data-numbered');
-        var searchFor = (!popUi.isEmpty(popUi.getQuery('search_for'))) ? popUi.getQuery('search_for') : null;
-        var searchBy  = (!popUi.isEmpty(popUi.getQuery('search_by'))) ? popUi.getQuery('search_by') : null;
+        var url         = $('#results').attr('data-url');
+        var page        = $('#results').attr('data-page');
+        var limit       = $('#results').attr('data-limit');
+        var sort        = $('#results').attr('data-sort');
+        var filter      = $('#results').attr('data-filter');
+        var fields      = $('#results').attr('data-fields');
+        var fieldsAry   = [];
+        var filterAry   = [];
+        var filterQuery = '';
+        var numbered    = $('#results').attr('data-numbered');
+        var searchFor   = (!popUi.isEmpty(popUi.getQuery('search_for'))) ? popUi.getQuery('search_for') : null;
+        var searchBy    = (!popUi.isEmpty(popUi.getQuery('search_by'))) ? popUi.getQuery('search_by') : null;
 
         if ((fields != null) && (fields != undefined) && (fields != '')) {
             fieldsAry = (fields.indexOf(',') != -1) ? fields.split(',') : [fields];
@@ -58,10 +59,11 @@ var popUi = {
         }
 
         if ((filter != null) && (filter != undefined) && (filter != '')) {
-            var filterAry = (filter.indexOf(',') != -1) ? filter.split(',') : [filter];
+            filterAry = (filter.indexOf(',') != -1) ? filter.split(',') : [filter];
             for (var i = 0; i < filterAry.length; i++) {
-                url = url + '&filter[]=' + filterAry[i];
+                filterQuery = filterQuery + '&filter[]=' + filterAry[i];
             }
+            url = url + filterQuery;
         }
 
         if (fieldsAry.length > 0) {
@@ -72,6 +74,9 @@ var popUi = {
 
         $.getJSON(url, function (data) {
             if ((data.results != undefined) && (data.results.length > 0)) {
+                $('#results').show();
+                $('#no-results').hide();
+
                 var nextRows = '';
                 var start    = $('#results > tbody > tr').length + 1;
                 var keys     = Object.keys(data.results[0]);
@@ -88,7 +93,6 @@ var popUi = {
                     var keys = Object.keys(data.results[0]);
                     var tableHeader = '<tr>';
 
-
                     if (numbered == 1) {
                         tableHeader = tableHeader + '<th>#</th>';
                     }
@@ -103,6 +107,8 @@ var popUi = {
                     $('#results > thead').append(tableHeader);
                 }
 
+                popUi.setThLinks(searchBy, searchFor, filterQuery);
+
                 for (var i = 0; i < data.results.length; i++) {
                     nextRows = nextRows + '<tr>';
                     if (numbered == 1) {
@@ -116,9 +122,58 @@ var popUi = {
                 }
 
                 $('#results > tbody').append(nextRows);
+                $('#loading').hide();
                 $('#loading').css('background-image', 'none');
+            } else {
+                if ($('#results-count')[0] != undefined) {
+                    $('#results-count')[0].innerHTML = 0;
+                } else {
+                    $('#results-header').append(' <span>(<span id="results-count">0</span>)</span>');
+                }
+
+                $('#results').hide();
+                $('#no-results').show();
             }
         });
+    },
+
+    fetchSearch : function() {
+        if (!popUi.isEmpty($('#search_for').val()) && !popUi.isEmpty($('#search_for').val())) {
+            var searchFor = $('#search_for').val();
+            var searchBy  = $('#search_by').val();
+            if ($('#results > tbody > tr').length > 0) {
+                $('#results > tbody > tr').remove();
+            }
+
+            $('#results').attr('data-page', 1);
+            $('#results').attr('data-filter', searchBy + ' LIKE ' + searchFor + '%');
+
+            popUi.setThLinks(searchBy, searchFor);
+            popUi.fetchResults();
+        }
+    },
+
+    setThLinks : function(searchBy, searchFor, filterQuery) {
+        var thLinks = $('#results > thead > tr > th > a');
+        var filter  = (!popUi.isEmpty(searchBy) && !popUi.isEmpty(searchFor)) ?
+            searchBy + '%20LIKE%20' + searchFor + '%25' : '';
+
+        for (var i = 0; i < thLinks.length; i++) {
+            var href = $(thLinks[i]).attr('href');
+            if (href.indexOf('&filter') != -1) {
+                href = href.substring(0, href.indexOf('&filter'));
+            }
+            if (!popUi.isEmpty(filter)) {
+                href = href + '&filter[]=' + filter;
+            } else if (!popUi.isEmpty(filterQuery)) {
+                href = href + filterQuery;
+            }
+            //if (!popUi.isEmpty(fieldsQuery) && (href.indexOf('&fields') == -1)) {
+            //    href = href + '&' + fieldsQuery;
+            //}
+            console.log(href);
+            $(thLinks[i]).attr('href', href);
+        }
     },
 
     isEmpty : function(value) {
@@ -204,6 +259,7 @@ $(document).ready(function(){
             if (($(window).height() + $(window).scrollTop()) == $(document).height()) {
                 if (parseInt($('#results-count')[0].innerHTML) > $('#results > tbody > tr').length) {
                     $('#loading').css('background-image', 'url(/assets/img/loading.gif)');
+                    $('#loading').show();
 
                     popUi.bottom = false;
                     var page     = $('#results').attr('data-page');
@@ -217,5 +273,8 @@ $(document).ready(function(){
                 popUi.bottom = false;
             }
         });
+
+        $('#search_for').keyup(popUi.fetchSearch);
+        $('#search_by').change(popUi.fetchSearch);
     }
 });

@@ -6,13 +6,50 @@ var popUi = {
     bottom : false,
 
     fetchResults : function() {
-        var url      = $('#results').attr('data-url');
-        var page     = $('#results').attr('data-page');
-        var limit    = $('#results').attr('data-limit');
-        var sort     = $('#results').attr('data-sort');
-        var filter   = $('#results').attr('data-filter');
-        var fields   = $('#results').attr('data-fields');
-        var numbered = $('#results').attr('data-numbered');
+        var url       = $('#results').attr('data-url');
+        var page      = $('#results').attr('data-page');
+        var limit     = $('#results').attr('data-limit');
+        var sort      = $('#results').attr('data-sort');
+        var filter    = $('#results').attr('data-filter');
+        var fields    = $('#results').attr('data-fields');
+        var fieldsAry = [];
+        var allFields = [];
+        var numbered  = $('#results').attr('data-numbered');
+        var searchFor = (!popUi.isEmpty(popUi.getQuery('search_for'))) ? popUi.getQuery('search_for') : null;
+        var searchBy  = (!popUi.isEmpty(popUi.getQuery('search_by'))) ? popUi.getQuery('search_by') : null;
+
+        if ((fields != null) && (fields != undefined) && (fields != '')) {
+            fieldsAry = (fields.indexOf(',') != -1) ? fields.split(',') : [fields];
+        }
+
+        if (searchFor != null) {
+            $('#search_for').val(searchFor);
+        }
+
+        if ($('#search_by > option').length == 0) {
+            $.getJSON(url + '/fields', function (data) {
+                if (data.fields != undefined) {
+                    var options     = '';
+                    var checkboxes  = '';
+
+                    for (var i = 0; i < data.fields.length; i++) {
+
+                        if (data.fields[i] != 'id') {
+                            options = options + '<option value="' + data.fields[i] + '"' +
+                                ((searchBy == data.fields[i]) ? ' selected="selected"' : '') + '>'
+                                + popUi.convertCase(data.fields[i]) + '</option>';
+                        }
+
+                        checkboxes  = checkboxes + '<span><input type="checkbox" name="fields[]" id="fields'
+                            + (i + 1) + '" value="' + data.fields[i] + '"' +
+                            (((fieldsAry != undefined) && (fieldsAry.indexOf(data.fields[i]) != -1)) ?
+                                ' checked="checked"' : '') + ' /> ' + popUi.convertCase(data.fields[i]) + '</span>';
+                    }
+                    $('#search-form > div:last-child').append(checkboxes);
+                    $('#search_by').append(options);
+                }
+            });
+        }
 
         url = url + '?page=' + page + '&limit=' + limit;
 
@@ -27,8 +64,7 @@ var popUi = {
             }
         }
 
-        if ((fields != null) && (fields != undefined) && (fields != '')) {
-            var fieldsAry = (fields.indexOf(',') != -1) ? fields.split(',') : [fields];
+        if (fieldsAry.length > 0) {
             for (var i = 0; i < fieldsAry.length; i++) {
                 url = url + '&fields[]=' + fieldsAry[i];
             }
@@ -51,6 +87,7 @@ var popUi = {
                 if ($('#results > thead > tr').length == 0) {
                     var keys = Object.keys(data.results[0]);
                     var tableHeader = '<tr>';
+
 
                     if (numbered == 1) {
                         tableHeader = tableHeader + '<th>#</th>';
@@ -152,6 +189,13 @@ var popUi = {
 
 $(document).ready(function(){
     if ($('#results')[0] != undefined) {
+        var searchFor = (!popUi.isEmpty(popUi.getQuery('search_for'))) ? popUi.getQuery('search_for') : null;
+        var searchBy  = (!popUi.isEmpty(popUi.getQuery('search_by'))) ? popUi.getQuery('search_by') : null;
+
+        if ((searchFor != null) && (searchBy != null)) {
+            $('#results').attr('data-filter', searchBy + ' LIKE ' + searchFor + '%');
+        }
+
         // Fetch initial result set
         popUi.fetchResults();
 

@@ -31,6 +31,47 @@ table th {
   font-weight: bold;
 }
 
+.form-control-inline {
+  display: inline;
+  width: auto;
+}
+
+#search-form {
+  margin: 0;
+  padding: 0;
+  float: right;
+}
+
+#search-form > div {
+  padding-left: 4px;
+  display: table-cell;
+  vertical-align: top;
+}
+
+#search-form > div:last-child {
+  margin: 0;
+  padding: 4px 2px 4px 2px;
+  width: auto;
+  height: 30px;
+  font-size: 0.825em;
+  float: right;
+  display: block;
+}
+
+#search-form > div:last-child > span {
+  padding-left: 12px;
+  display: inline-block;
+}
+
+#search-form > div:last-child > span > input[type=checkbox] {
+  position: relative;
+  top: 2px;
+}
+
+#search_by, #fields {
+  width: 100px;
+}
+
 #loading {
   margin: 0 auto;
   padding: 0;

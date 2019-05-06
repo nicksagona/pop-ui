@@ -1,7 +1,23 @@
 <?php include 'inc/functions.php'; ?>
 <?php include 'inc/header.phtml'; ?>
+    <form id="search-form" action="/users" method="get">
+        <div>
+            <input class="form-control form-control-inline form-control-sm pull-right" id="search_for" name="search_for" type="text" value="" placeholder="Search..." size="20" />
+        </div>
+        <div>
+            <select class="form-control form-control-inline form-control-sm pull-right" name="search_by" id="search_by">
+            </select>
+        </div>
+        <div>
+            <button class="btn btn-sm btn-outline-primary search-btn text-uppercase">Search</button>
+            <a class="btn btn-sm btn-outline-primary text-uppercase" href="/users/export">Export</a>
+            <a class="btn btn-sm btn-outline-primary text-uppercase" href="/users">Reset</a>
+        </div>
+        <div>
+        </div>
+    </form>
     <h1 id="results-header"><?=$title; ?></h1>
-    <table id="results" class="table table-bordered table-striped table-hover" cellpadding="0" cellspacing="0"
+    <table id="results" class="table table-bordered table-striped table-hover"
            data-url="http://mock-api.localhost/users"
            data-page="<?=(int)$page; ?>"
            data-limit="<?=(int)$limit; ?>"
@@ -10,10 +26,8 @@
            data-fields="<?=implode(',', $fields); ?>"
            data-numbered="1">
         <thead>
-
         </thead>
         <tbody>
-
         </tbody>
     </table>
     <div id="loading"></div>

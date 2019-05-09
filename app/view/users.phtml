@@ -12,10 +12,11 @@
             <button class="btn btn-sm btn-outline-primary search-btn text-uppercase">Search</button>
             <a class="btn btn-sm btn-outline-primary text-uppercase" href="/users/export">Export</a>
             <a class="btn btn-sm btn-outline-primary text-uppercase" href="/users">Reset</a>
-        </div>
-        <div>
+            <input type="hidden" name="fields" id="fields" value="" />
         </div>
     </form>
+    <div id="field-checkboxes">
+    </div>
     <h1 id="results-header"><?=$title; ?></h1>
     <table id="results" class="table table-bordered table-striped table-hover"
            data-url="http://mock-api.localhost/users"
@@ -23,7 +24,7 @@
            data-limit="<?=(int)$limit; ?>"
            data-sort="<?=$sort; ?>"
            data-filter="<?=implode(',', $filter); ?>"
-           data-fields="<?=implode(',', $fields); ?>"
+           data-fields="<?=$fields; ?>"
            data-numbered="1">
         <thead>
         </thead>

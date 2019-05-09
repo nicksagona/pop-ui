@@ -48,7 +48,12 @@ table th {
   vertical-align: top;
 }
 
-#search-form > div:last-child {
+#search_by, #fields {
+  width: 100px;
+}
+
+#field-checkboxes {
+  clear: right;
   margin: 0;
   padding: 4px 2px 4px 2px;
   width: auto;
@@ -58,18 +63,14 @@ table th {
   display: block;
 }
 
-#search-form > div:last-child > span {
+#field-checkboxes > span {
   padding-left: 12px;
   display: inline-block;
 }
 
-#search-form > div:last-child > span > input[type=checkbox] {
+#field-checkboxes > span > input[type=checkbox] {
   position: relative;
   top: 2px;
-}
-
-#search_by, #fields {
-  width: 100px;
 }
 
 #loading {

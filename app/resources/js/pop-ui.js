@@ -12,16 +12,11 @@ var popUi = {
         var sort        = $('#results').attr('data-sort');
         var filter      = $('#results').attr('data-filter');
         var fields      = $('#results').attr('data-fields');
-        var fieldsAry   = [];
         var filterAry   = [];
         var filterQuery = '';
         var numbered    = $('#results').attr('data-numbered');
         var searchFor   = (!popUi.isEmpty(popUi.getQuery('search_for'))) ? popUi.getQuery('search_for') : null;
         var searchBy    = (!popUi.isEmpty(popUi.getQuery('search_by'))) ? popUi.getQuery('search_by') : null;
-
-        if ((fields != null) && (fields != undefined) && (fields != '')) {
-            fieldsAry = (fields.indexOf(',') != -1) ? fields.split(',') : [fields];
-        }
 
         if (searchFor != null) {
             $('#search_for').val(searchFor);
@@ -43,11 +38,15 @@ var popUi = {
 
                         checkboxes  = checkboxes + '<span><input type="checkbox" name="fields[]" id="fields'
                             + (i + 1) + '" value="' + data.fields[i] + '"' +
-                            (((fieldsAry != undefined) && (fieldsAry.indexOf(data.fields[i]) != -1)) ?
+                            (((!popUi.isEmpty(fields)) && (fields.indexOf(data.fields[i]) != -1)) ?
                                 ' checked="checked"' : '') + ' /> ' + popUi.convertCase(data.fields[i]) + '</span>';
                     }
-                    $('#search-form > div:last-child').append(checkboxes);
+                    $('#field-checkboxes').append(checkboxes);
                     $('#search_by').append(options);
+
+                    $('#field-checkboxes input[type=checkbox]').click(function() {
+                        popUi.setFields(this);
+                    });
                 }
             });
         }
@@ -58,7 +57,7 @@ var popUi = {
             url = url + '&sort=' + sort;
         }
 
-        if ((filter != null) && (filter != undefined) && (filter != '')) {
+        if (!popUi.isEmpty(filter)) {
             filterAry = (filter.indexOf(',') != -1) ? filter.split(',') : [filter];
             for (var i = 0; i < filterAry.length; i++) {
                 filterQuery = filterQuery + '&filter[]=' + filterAry[i];
@@ -66,10 +65,8 @@ var popUi = {
             url = url + filterQuery;
         }
 
-        if (fieldsAry.length > 0) {
-            for (var i = 0; i < fieldsAry.length; i++) {
-                url = url + '&fields[]=' + fieldsAry[i];
-            }
+        if (!popUi.isEmpty(fields)) {
+            url = url + '&fields=' + fields;
         }
 
         $.getJSON(url, function (data) {
@@ -81,11 +78,11 @@ var popUi = {
                 var start    = $('#results > tbody > tr').length + 1;
                 var keys     = Object.keys(data.results[0]);
 
-                if (data.results_count != undefined) {
-                    if ($('#results-count')[0] != undefined) {
-                        $('#results-count')[0].innerHTML = data.results_count;
+                if (data.total_count != undefined) {
+                    if ($('#total-count')[0] != undefined) {
+                        $('#total-count')[0].innerHTML = data.total_count;
                     } else {
-                        $('#results-header').append(' <span>(<span id="results-count">' + data.results_count + '</span>)</span>');
+                        $('#results-header').append(' <span>(<span id="total-count">' + data.total_count + '</span>)</span>');
                     }
                 }
 
@@ -125,10 +122,10 @@ var popUi = {
                 $('#loading').hide();
                 $('#loading').css('background-image', 'none');
             } else {
-                if ($('#results-count')[0] != undefined) {
-                    $('#results-count')[0].innerHTML = 0;
+                if ($('#total-count')[0] != undefined) {
+                    $('#total-count')[0].innerHTML = 0;
                 } else {
-                    $('#results-header').append(' <span>(<span id="results-count">0</span>)</span>');
+                    $('#results-header').append(' <span>(<span id="total-count">0</span>)</span>');
                 }
 
                 $('#results').hide();
@@ -171,8 +168,35 @@ var popUi = {
             //if (!popUi.isEmpty(fieldsQuery) && (href.indexOf('&fields') == -1)) {
             //    href = href + '&' + fieldsQuery;
             //}
-            console.log(href);
             $(thLinks[i]).attr('href', href);
+        }
+    },
+
+    setFields : function(checkbox) {
+        if ($('#fields')[0] != undefined) {
+            var value  = $(checkbox).prop('value');
+            var fields = $('#fields').prop('value');
+            if ($(checkbox).prop('checked')) {
+                var newFields = ((fields != '') && (fields != null) && (fields != undefined)) ?
+                    fields + ',' + value : value;
+                $('#fields').prop('value', newFields);
+            } else {
+                if ((fields.indexOf(',') == -1) && (fields == value)) {
+                    $('#fields').prop('value', '');
+                } else {
+                    var fieldAry     = (fields.indexOf(',') != -1) ? fields.split(',') : [fields];
+                    var newFieldsAry = [];
+                    for (var i = 0; i < fieldAry.length; i++) {
+                        if (fieldAry[i] != value) {
+                            newFieldsAry.push(fieldAry[i]);
+                        }
+                    }
+                    $('#fields').prop('value', newFieldsAry.join(','));
+                }
+
+
+            }
+
         }
     },
 
@@ -257,7 +281,7 @@ $(document).ready(function(){
         // On window scroll, fetch the next page
         $(window).scroll(function() {
             if (($(window).height() + $(window).scrollTop()) == $(document).height()) {
-                if (parseInt($('#results-count')[0].innerHTML) > $('#results > tbody > tr').length) {
+                if (parseInt($('#total-count')[0].innerHTML) > $('#results > tbody > tr').length) {
                     $('#loading').css('background-image', 'url(/assets/img/loading.gif)');
                     $('#loading').show();
 

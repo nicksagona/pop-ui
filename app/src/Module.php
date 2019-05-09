@@ -3,8 +3,6 @@
 namespace Pop\Ui;
 
 use Pop\Application;
-use Pop\Db\Db;
-use Pop\Db\Record;
 use Pop\Http\Request;
 use Pop\Http\Response;
 use Pop\View\View;
@@ -37,8 +35,6 @@ class Module extends \Pop\Module\Module
                 ]
             );
         }
-
-        $this->application->on('app.dispatch.pre', 'Pop\Ui\Http\Event\Options::check', 2);
 
         return $this;
     }

@@ -14,7 +14,6 @@ class IndexController extends AbstractController
     {
         $this->prepareView('index.phtml');
         $this->view->title = 'Home';
-
         $this->send();
     }
 

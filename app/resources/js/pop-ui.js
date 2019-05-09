@@ -5,6 +5,7 @@
 var popUi = {
     bottom : false,
 
+    // Main method fo fetch results
     fetchResults : function() {
         var url         = $('#results').attr('data-url');
         var urlQuery    = [];
@@ -33,6 +34,7 @@ var popUi = {
             $('#fields').prop('value', fields);
         }
 
+        // Set field options and checkboxes in the search form
         if ($('#search_by > option').length == 0) {
             $.getJSON(url + '/fields', function (fieldsData) {
                 if (fieldsData.fields != undefined) {
@@ -63,6 +65,7 @@ var popUi = {
             });
         }
 
+        // Construct the URL query
         if ((sort != null) && (sort != undefined) && (sort != '')) {
             urlQuery.push('sort=' + sort);
         }
@@ -77,9 +80,6 @@ var popUi = {
 
         if (!popUi.isEmpty(fields)) {
             urlQuery.push('fields=' + fields);
-            if ($('#results > thead > tr').length > 0) {
-                $('#results > thead > tr').remove();
-            }
         }
 
         url = url + '?page=' + page + '&limit=' + limit;
@@ -92,7 +92,11 @@ var popUi = {
             $('#export-btn').attr('href', href + '?' + urlQuery.join('&'));
         }
 
+        $('#results > thead > tr').remove();
+
+        // Fetch results
         $.getJSON(url, function (data) {
+            // If there are results
             if ((data.results != undefined) && (data.results.length > 0)) {
                 $('#results').show();
                 $('#no-results').hide();
@@ -101,6 +105,7 @@ var popUi = {
                 var start    = $('#results > tbody > tr').length + 1;
                 var keys     = Object.keys(data.results[0]);
 
+                // Set total count
                 if (data.total_count != undefined) {
                     if ($('#total-count')[0] != undefined) {
                         $('#total-count')[0].innerHTML = data.total_count;
@@ -109,6 +114,7 @@ var popUi = {
                     }
                 }
 
+                // Set table headers
                 if ($('#results > thead > tr').length == 0) {
                     var keys = Object.keys(data.results[0]);
                     var tableHeader = '<tr>';
@@ -130,8 +136,10 @@ var popUi = {
                     popUi.setThLinks(searchBy, searchFor);
                 }
 
+                // Set table header links
                 popUi.setThLinks(searchBy, searchFor, fields, filterQuery);
 
+                // Set result rows
                 for (var i = 0; i < data.results.length; i++) {
                     nextRows = nextRows + '<tr>';
                     if (numbered == 1) {
@@ -147,6 +155,7 @@ var popUi = {
                 $('#results > tbody').append(nextRows);
                 $('#loading').hide();
                 $('#loading').css('background-image', 'none');
+            // Else, no results
             } else {
                 if ($('#total-count')[0] != undefined) {
                     $('#total-count')[0].innerHTML = 0;
@@ -160,21 +169,28 @@ var popUi = {
         });
     },
 
+    // Method to fetch results based on search criteria
     fetchSearch : function() {
-        if (!popUi.isEmpty($('#search_for').val()) && !popUi.isEmpty($('#search_for').val())) {
-            var searchFor = $('#search_for').val();
-            var searchBy  = $('#search_by').val();
-            if ($('#results > tbody > tr').length > 0) {
-                $('#results > tbody > tr').remove();
-            }
+        var searchFor = $('#search_for').val();
+        var searchBy  = $('#search_by').val();
 
-            $('#results').attr('data-page', 1);
-            $('#results').attr('data-filter', searchBy + '+LIKE+' + searchFor + '%25');
+        // Reset data points and remove existing results rows
+        $('#results').attr('data-page', 1);
 
-            popUi.fetchResults();
+        if ($('#results > tbody > tr').length > 0) {
+            $('#results > tbody > tr').remove();
         }
+
+        if (!popUi.isEmpty($('#search_for').val()) && !popUi.isEmpty($('#search_for').val())) {
+            $('#results').attr('data-filter', searchBy + '+LIKE+' + searchFor + '%25');
+        } else {
+            $('#results').attr('data-filter', '');
+        }
+
+        popUi.fetchResults();
     },
 
+    // Method to set table header links
     setThLinks : function(searchBy, searchFor, fields, filterQuery) {
         var thLinks = $('#results > thead > tr > th > a');
         var filter  = (!popUi.isEmpty(searchBy) && !popUi.isEmpty(searchFor)) ?
@@ -197,6 +213,7 @@ var popUi = {
         }
     },
 
+    // Method to set field values in the hidden fields element
     setFields : function(checkbox) {
         if ($('#fields')[0] != undefined) {
             var value  = $(checkbox).prop('value');
@@ -226,11 +243,13 @@ var popUi = {
         }
     },
 
+    // Method to check if value is truly empty
     isEmpty : function(value) {
         return ((value == undefined) || (value == null) || (value == '') ||
             (value == 'undefined') || (value == 'null'));
     },
 
+    // Method to get query parameters
     getQuery : function(key, u) {
         var vars = [];
         var url  = (u != null) ? u : location.href;
@@ -269,6 +288,7 @@ var popUi = {
         }
     },
 
+    // Method to determine sort parameter
     getSort : function(sort) {
         if (popUi.getQuery('sort') == sort) {
             sort = (sort.substring(0, 1) == '-') ? sort.substring(1) : '-' + sort;
@@ -276,6 +296,7 @@ var popUi = {
         return sort;
     },
 
+    // Method to convert case
     convertCase : function(str) {
         if (str == 'id') {
             return 'ID';
@@ -311,9 +332,9 @@ $(document).ready(function(){
                     $('#loading').css('background-image', 'url(/assets/img/loading.gif)');
                     $('#loading').show();
 
-                    popUi.bottom = false;
                     var page     = $('#results').attr('data-page');
                     page         = parseInt(page) + 1;
+                    popUi.bottom = false;
 
                     $('#results').attr('data-page', page);
                     popUi.fetchResults();

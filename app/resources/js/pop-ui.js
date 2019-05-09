@@ -146,8 +146,13 @@ var popUi = {
                         nextRows = nextRows + '<td>' + (start + i) + '</td>';
                     }
                     for (var j = 0; j < keys.length; j++) {
-                        nextRows = nextRows + '<td>' + ((!popUi.isEmpty(data.results[i][keys[j]])) ?
-                            data.results[i][keys[j]] : '') + '</td>';
+                        if (keys[j] == 'id') {
+                            nextRows = nextRows + '<td>' + ((!popUi.isEmpty(data.results[i][keys[j]])) ?
+                                data.results[i][keys[j]] : '') + '</td>';
+                        } else {
+                            nextRows = nextRows + '<td><span class="td-span">' + ((!popUi.isEmpty(data.results[i][keys[j]])) ?
+                                data.results[i][keys[j]] : '') + '</span><input type="text" class="form-control form-control-sm td-input" name="' + keys[j] + '" id="' + keys[j] + '" value="' + data.results[i][keys[j]] + '" /></td>';
+                        }
                     }
                     nextRows = nextRows + '</tr>';
                 }

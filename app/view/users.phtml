@@ -10,7 +10,7 @@
         </div>
         <div>
             <button class="btn btn-sm btn-outline-primary search-btn text-uppercase">Search</button>
-            <a class="btn btn-sm btn-outline-primary text-uppercase" href="/users/export">Export</a>
+            <a class="btn btn-sm btn-outline-primary text-uppercase" id="export-btn" href="/users/export">Export</a>
             <a class="btn btn-sm btn-outline-primary text-uppercase" href="/users">Reset</a>
             <input type="hidden" name="fields" id="fields" value="" />
         </div>
@@ -19,11 +19,11 @@
     </div>
     <h1 id="results-header"><?=$title; ?></h1>
     <table id="results" class="table table-bordered table-striped table-hover"
-           data-url="http://mock-api.localhost/users"
+           data-url="<?=$apiUrl; ?>"
            data-page="<?=(int)$page; ?>"
            data-limit="<?=(int)$limit; ?>"
            data-sort="<?=$sort; ?>"
-           data-filter="<?=implode(',', $filter); ?>"
+           data-filter="<?=(!empty($filter) && is_array($filter)) ? implode(',', $filter) : $filter; ?>"
            data-fields="<?=$fields; ?>"
            data-numbered="1">
         <thead>

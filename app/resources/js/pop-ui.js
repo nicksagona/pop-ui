@@ -7,6 +7,7 @@ var popUi = {
 
     fetchResults : function() {
         var url         = $('#results').attr('data-url');
+        var urlQuery    = [];
         var page        = $('#results').attr('data-page');
         var limit       = $('#results').attr('data-limit');
         var sort        = $('#results').attr('data-sort');
@@ -19,54 +20,76 @@ var popUi = {
         var searchBy    = (!popUi.isEmpty(popUi.getQuery('search_by'))) ? popUi.getQuery('search_by') : null;
 
         if (searchFor != null) {
-            $('#search_for').val(searchFor);
+            $('#search_for').prop('value', searchFor);
+        } else if ($('#search_for').prop('value') != '') {
+            searchFor = $('#search_for').prop('value');
+        }
+
+        if ((searchBy == null) && ($('#search_by').val() != '')) {
+            searchBy = $('#search_by').val();
+        }
+
+        if (fields != null) {
+            $('#fields').prop('value', fields);
         }
 
         if ($('#search_by > option').length == 0) {
-            $.getJSON(url + '/fields', function (data) {
-                if (data.fields != undefined) {
+            $.getJSON(url + '/fields', function (fieldsData) {
+                if (fieldsData.fields != undefined) {
                     var options     = '';
                     var checkboxes  = '';
 
-                    for (var i = 0; i < data.fields.length; i++) {
+                    for (var i = 0; i < fieldsData.fields.length; i++) {
 
-                        if (data.fields[i] != 'id') {
-                            options = options + '<option value="' + data.fields[i] + '"' +
-                                ((searchBy == data.fields[i]) ? ' selected="selected"' : '') + '>'
-                                + popUi.convertCase(data.fields[i]) + '</option>';
+                        if (fieldsData.fields[i] != 'id') {
+                            options = options + '<option value="' + fieldsData.fields[i] + '"' +
+                                ((searchBy == fieldsData.fields[i]) ? ' selected="selected"' : '') + '>'
+                                + popUi.convertCase(fieldsData.fields[i]) + '</option>';
                         }
 
                         checkboxes  = checkboxes + '<span><input type="checkbox" name="fields[]" id="fields'
-                            + (i + 1) + '" value="' + data.fields[i] + '"' +
-                            (((!popUi.isEmpty(fields)) && (fields.indexOf(data.fields[i]) != -1)) ?
-                                ' checked="checked"' : '') + ' /> ' + popUi.convertCase(data.fields[i]) + '</span>';
+                            + (i + 1) + '" value="' + fieldsData.fields[i] + '"' +
+                            (((!popUi.isEmpty(fields)) && (fields.indexOf(fieldsData.fields[i]) != -1)) ?
+                                ' checked="checked"' : '') + ' /> ' + popUi.convertCase(fieldsData.fields[i]) + '</span>';
                     }
                     $('#field-checkboxes').append(checkboxes);
                     $('#search_by').append(options);
 
                     $('#field-checkboxes input[type=checkbox]').click(function() {
                         popUi.setFields(this);
+                        popUi.fetchSearch();
                     });
                 }
             });
         }
 
-        url = url + '?page=' + page + '&limit=' + limit;
-
         if ((sort != null) && (sort != undefined) && (sort != '')) {
-            url = url + '&sort=' + sort;
+            urlQuery.push('sort=' + sort);
         }
 
         if (!popUi.isEmpty(filter)) {
             filterAry = (filter.indexOf(',') != -1) ? filter.split(',') : [filter];
             for (var i = 0; i < filterAry.length; i++) {
                 filterQuery = filterQuery + '&filter[]=' + filterAry[i];
+                urlQuery.push('filter[]=' + filterAry[i]);
             }
-            url = url + filterQuery;
         }
 
         if (!popUi.isEmpty(fields)) {
-            url = url + '&fields=' + fields;
+            urlQuery.push('fields=' + fields);
+            if ($('#results > thead > tr').length > 0) {
+                $('#results > thead > tr').remove();
+            }
+        }
+
+        url = url + '?page=' + page + '&limit=' + limit;
+        if (urlQuery.length > 0) {
+            url = url + '&' + urlQuery.join('&');
+            var href = $('#export-btn').attr('href');
+            if (href.indexOf('?') != -1) {
+                href = href.substring(0, href.indexOf('?'));
+            }
+            $('#export-btn').attr('href', href + '?' + urlQuery.join('&'));
         }
 
         $.getJSON(url, function (data) {
@@ -95,16 +118,19 @@ var popUi = {
                     }
 
                     for (var i = 0; i < keys.length; i++) {
-                        tableHeader = tableHeader + '<th><a href="?sort=' + popUi.getSort(keys[i]) + '">' +
+                        tableHeader = tableHeader + '<th><a href="?sort=' + popUi.getSort(keys[i]) +
+                            ((searchFor != null) ? '&search_for=' + searchFor : '') +
+                            ((searchBy != null) ? '&search_by=' + searchBy : '') + '">' +
                             popUi.convertCase(keys[i]) + '</a></th>';
                     }
 
                     tableHeader = tableHeader + '</tr>';
 
                     $('#results > thead').append(tableHeader);
+                    popUi.setThLinks(searchBy, searchFor);
                 }
 
-                popUi.setThLinks(searchBy, searchFor, filterQuery);
+                popUi.setThLinks(searchBy, searchFor, fields, filterQuery);
 
                 for (var i = 0; i < data.results.length; i++) {
                     nextRows = nextRows + '<tr>';
@@ -143,17 +169,16 @@ var popUi = {
             }
 
             $('#results').attr('data-page', 1);
-            $('#results').attr('data-filter', searchBy + ' LIKE ' + searchFor + '%');
+            $('#results').attr('data-filter', searchBy + '+LIKE+' + searchFor + '%25');
 
-            popUi.setThLinks(searchBy, searchFor);
             popUi.fetchResults();
         }
     },
 
-    setThLinks : function(searchBy, searchFor, filterQuery) {
+    setThLinks : function(searchBy, searchFor, fields, filterQuery) {
         var thLinks = $('#results > thead > tr > th > a');
         var filter  = (!popUi.isEmpty(searchBy) && !popUi.isEmpty(searchFor)) ?
-            searchBy + '%20LIKE%20' + searchFor + '%25' : '';
+            searchBy + '+LIKE+' + searchFor + '%25' : '';
 
         for (var i = 0; i < thLinks.length; i++) {
             var href = $(thLinks[i]).attr('href');
@@ -165,9 +190,9 @@ var popUi = {
             } else if (!popUi.isEmpty(filterQuery)) {
                 href = href + filterQuery;
             }
-            //if (!popUi.isEmpty(fieldsQuery) && (href.indexOf('&fields') == -1)) {
-            //    href = href + '&' + fieldsQuery;
-            //}
+            if (!popUi.isEmpty(fields) && (href.indexOf('&fields') == -1)) {
+                href = href + '&fields=' + fields;
+            }
             $(thLinks[i]).attr('href', href);
         }
     },
@@ -180,9 +205,11 @@ var popUi = {
                 var newFields = ((fields != '') && (fields != null) && (fields != undefined)) ?
                     fields + ',' + value : value;
                 $('#fields').prop('value', newFields);
+                $('#results').attr('data-fields', newFields);
             } else {
                 if ((fields.indexOf(',') == -1) && (fields == value)) {
                     $('#fields').prop('value', '');
+                    $('#results').attr('data-fields', '');
                 } else {
                     var fieldAry     = (fields.indexOf(',') != -1) ? fields.split(',') : [fields];
                     var newFieldsAry = [];
@@ -192,9 +219,8 @@ var popUi = {
                         }
                     }
                     $('#fields').prop('value', newFieldsAry.join(','));
+                    $('#results').attr('data-fields', newFieldsAry.join(','));
                 }
-
-
             }
 
         }
@@ -219,7 +245,7 @@ var popUi = {
             for (var i = 0; i < varsAry.length; i++) {
                 var gV = varsAry[i].split('=');
                 var k  = decodeURIComponent(gV[0]);
-                var v  = decodeURIComponent(gV[1])
+                var v  = decodeURIComponent(gV[1]);
 
                 if (k.indexOf('[') != -1) {
                     k = k.substring(0, k.indexOf('['));
@@ -272,7 +298,7 @@ $(document).ready(function(){
         var searchBy  = (!popUi.isEmpty(popUi.getQuery('search_by'))) ? popUi.getQuery('search_by') : null;
 
         if ((searchFor != null) && (searchBy != null)) {
-            $('#results').attr('data-filter', searchBy + ' LIKE ' + searchFor + '%');
+            $('#results').attr('data-filter', searchBy + '+LIKE+' + searchFor + '%25');
         }
 
         // Fetch initial result set

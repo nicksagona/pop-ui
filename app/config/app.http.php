@@ -25,5 +25,6 @@ return [
         'Access-Control-Allow-Methods' => 'HEAD, OPTIONS, GET, PUT, POST, PATCH, DELETE',
         'Content-Type'                 => 'application/json'
     ],
-    'limit' => 25
+    'api_url' => 'http://mock-api.localhost',
+    'limit'   => 25
 ];

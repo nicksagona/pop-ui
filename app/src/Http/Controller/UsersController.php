@@ -34,13 +34,13 @@ class UsersController extends AbstractController
             $fields = (is_array($fields)) ? implode(',', $fields) : $fields;
         }
 
-        $this->view->title    = 'Users';
-        $this->view->apiUrl   = $this->application->config['api_url'] . '/users';
-        $this->view->page     = (null !== $this->request->getQuery('page')) ? (int)$this->request->getQuery('page') : 1;
-        $this->view->sort     = (null !== $this->request->getQuery('sort')) ? $this->request->getQuery('sort') : null;
-        $this->view->filter   = $filter;
-        $this->view->fields   = $fields;
-        $this->view->limit    = (null !== $this->request->getQuery('limit')) ?
+        $this->view->title  = 'Users';
+        $this->view->apiUrl = $this->application->config['api_url'] . '/users';
+        $this->view->page   = (null !== $this->request->getQuery('page')) ? (int)$this->request->getQuery('page') : 1;
+        $this->view->sort   = (null !== $this->request->getQuery('sort')) ? $this->request->getQuery('sort') : null;
+        $this->view->filter = $filter;
+        $this->view->fields = $fields;
+        $this->view->limit  = (null !== $this->request->getQuery('limit')) ?
             (int)$this->request->getQuery('limit') : $this->application->config['limit'];
 
         $this->send();

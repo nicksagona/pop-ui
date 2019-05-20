@@ -8,12 +8,12 @@ var popUi = {
     // Main method fo fetch results
     fetchResults : function() {
         var url         = $('#results').attr('data-url');
-        var urlQuery    = [];
         var page        = $('#results').attr('data-page');
         var limit       = $('#results').attr('data-limit');
         var sort        = $('#results').attr('data-sort');
         var filter      = $('#results').attr('data-filter');
         var fields      = $('#results').attr('data-fields');
+        var urlQuery    = [];
         var filterAry   = [];
         var filterQuery = '';
         var numbered    = $('#results').attr('data-numbered');

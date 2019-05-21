@@ -12,7 +12,7 @@
             <button class="btn btn-sm btn-primary search-btn text-uppercase" title="Search"><i class="fa fa-search"></i></button>
             <a class="btn btn-sm btn-primary text-uppercase" id="export-btn" href="/users/export" title="Export"><i class="fa fa-arrow-down"></i></a>
             <a class="btn btn-sm btn-primary text-uppercase" href="/users" title="Refresh"><i class="fa fa-refresh"></i></a>
-            <a href="?page=1" class="btn btn-sm btn-primary" title="Page View"><i class="fa fa-copy"></i></a>
+            <a href="?scroll=0" class="btn btn-sm btn-primary" title="Page View"><i class="fa fa-copy"></i></a>
             <input type="hidden" name="fields" id="fields" value="" />
         </div>
     </form>
@@ -32,6 +32,12 @@
         <tbody>
         </tbody>
     </table>
+<?php if (isset($paginator)): ?>
+    <ul class="pagination pagination-sm justify-content-center">
+        <?=$paginator; ?>
+    </ul>
+<?php else: ?>
     <div id="loading"></div>
+<?php endif; ?>
     <div id="no-results"><h4>No users were found.</h4></div>
 <?php include 'inc/footer.phtml'; ?>

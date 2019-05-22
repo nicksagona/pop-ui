@@ -1,5 +1,6 @@
 composer.lock
 package-lock.json
+/app/config/app.http.php
 /vendor
 /public/assets/fonts
 /public/assets/app.*

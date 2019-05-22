@@ -26,5 +26,6 @@ return [
         'Content-Type'                 => 'application/json'
     ],
     'api_url' => 'http://mock-api.localhost',
+    'api_key' => null,
     'limit'   => 25
 ];

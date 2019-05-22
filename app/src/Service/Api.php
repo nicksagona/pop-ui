@@ -34,6 +34,19 @@ class Api
     }
 
     /**
+     * Method to add header
+     *
+     * @param  string $name
+     * @param  string $value
+     * @return Api
+     */
+    public function addHeader($name, $value)
+    {
+        $this->stream->setRequestHeader($name, $value);
+        return $this;
+    }
+
+    /**
      * Method to set query fields
      *
      * @param string $sort

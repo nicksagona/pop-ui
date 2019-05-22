@@ -99,6 +99,15 @@ table th {
   display: none;
 }
 
+#error {
+  clear: both;
+  margin: 0 auto;
+  padding: 25px;
+  border: solid 1px #ddd;
+  color: #f00;
+  display: none;
+}
+
 #scroll-top {
   position: fixed;
   margin: 0;

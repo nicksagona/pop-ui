@@ -55,6 +55,10 @@ class UsersController extends AbstractController
         if (null !== $this->request->getQuery('scroll')) {
             $api = new Api(new Stream($apiUrl . '/users/count'));
 
+            if (!empty($this->application->config['api_key'])) {
+                $api->addHeader('Authorization', 'Bearer ' . $this->application->config['api_key']);
+            }
+
             if (null !== $filter) {
                 $api->createQuery(null, $filter, null);
             } else if (!empty($this->request->getQuery('search_by')) && !empty($this->request->getQuery('search_for'))) {
@@ -93,6 +97,11 @@ class UsersController extends AbstractController
         $fields = (null !== $this->request->getQuery('fields')) ? $this->request->getQuery('fields') : null;
 
         $api = new Api(new Stream($apiUrl));
+
+        if (!empty($this->application->config['api_key'])) {
+            $api->addHeader('Authorization', 'Bearer ' . $this->application->config['api_key']);
+        }
+
         $api->createQuery($sort, $filter, $fields);
         $api->send();
 

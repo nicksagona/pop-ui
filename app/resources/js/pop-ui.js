@@ -2,6 +2,12 @@
  * pop-ui.js
  */
 
+//$.ajaxSetup({
+//    headers : {
+//        'Authorization' : 'Bearer ab1e9733c5a39a2bdc3b3958dd62b7b94120b062'
+//    }
+//});
+
 var popUi = {
     bottom : false,
 
@@ -36,35 +42,42 @@ var popUi = {
 
         // Set field options and checkboxes in the search form
         if ($('#search_by > option').length == 0) {
-            $.getJSON(url + '/fields', function (fieldsData) {
-                if (fieldsData.fields != undefined) {
-                    var options     = '';
-                    var checkboxes  = '';
+            $.ajax({
+                dataType: 'json',
+                headers: {
+                    "Authorization" : "Bearer ab1e9733c5a39a2bdc3b3958dd62b7b94120b062"
+                },
+                url:  url + '/fields',
+                success: function (fieldsData) {
+                    if (fieldsData.fields != undefined) {
+                        var options     = '';
+                        var checkboxes  = '';
 
-                    for (var i = 0; i < fieldsData.fields.length; i++) {
+                        for (var i = 0; i < fieldsData.fields.length; i++) {
 
-                        if (fieldsData.fields[i] != 'id') {
-                            options = options + '<option value="' + fieldsData.fields[i] + '"' +
-                                ((searchBy == fieldsData.fields[i]) ? ' selected="selected"' : '') + '>'
-                                + popUi.convertCase(fieldsData.fields[i]) + '</option>';
+                            if (fieldsData.fields[i] != 'id') {
+                                options = options + '<option value="' + fieldsData.fields[i] + '"' +
+                                    ((searchBy == fieldsData.fields[i]) ? ' selected="selected"' : '') + '>'
+                                    + popUi.convertCase(fieldsData.fields[i]) + '</option>';
+                            }
+
+                            checkboxes  = checkboxes + '<span><input type="checkbox" name="fields[]" id="fields'
+                                + (i + 1) + '" value="' + fieldsData.fields[i] + '"' +
+                                (((!popUi.isEmpty(fields)) && (fields.indexOf(fieldsData.fields[i]) != -1)) ?
+                                    ' checked="checked"' : '') + ' /> ' + popUi.convertCase(fieldsData.fields[i]) + '</span>';
                         }
+                        $('#field-checkboxes').append(checkboxes);
+                        $('#search_by').append(options);
 
-                        checkboxes  = checkboxes + '<span><input type="checkbox" name="fields[]" id="fields'
-                            + (i + 1) + '" value="' + fieldsData.fields[i] + '"' +
-                            (((!popUi.isEmpty(fields)) && (fields.indexOf(fieldsData.fields[i]) != -1)) ?
-                                ' checked="checked"' : '') + ' /> ' + popUi.convertCase(fieldsData.fields[i]) + '</span>';
+                        $('#field-checkboxes input[type=checkbox]').click(function() {
+                            popUi.setFields(this);
+                            if (popUi.isScroll()) {
+                                popUi.fetchSearch();
+                            }
+                        });
                     }
-                    $('#field-checkboxes').append(checkboxes);
-                    $('#search_by').append(options);
-
-                    $('#field-checkboxes input[type=checkbox]').click(function() {
-                        popUi.setFields(this);
-                        if (popUi.isScroll()) {
-                            popUi.fetchSearch();
-                        }
-                    });
                 }
-            });
+            }).fail(popUi.showError);
         }
 
         // Construct the URL query
@@ -97,90 +110,97 @@ var popUi = {
         $('#results > thead > tr').remove();
 
         // Fetch results
-        $.getJSON(url, function (data) {
-            // If there are results
-            if ((data.results != undefined) && (data.results.length > 0)) {
-                $('#results').show();
-                $('#no-results').hide();
+        $.ajax({
+            dataType: 'json',
+            headers: {
+                "Authorization" : "Bearer ab1e9733c5a39a2bdc3b3958dd62b7b94120b062"
+            },
+            url:  url,
+            success: function (data) {
+                // If there are results
+                if ((data.results != undefined) && (data.results.length > 0)) {
+                    $('#results').show();
+                    $('#no-results').hide();
 
-                var nextRows = '';
-                var start    = $('#results > tbody > tr').length + 1;
-                var keys     = Object.keys(data.results[0]);
+                    var nextRows = '';
+                    var start    = $('#results > tbody > tr').length + 1;
+                    var keys     = Object.keys(data.results[0]);
 
-                // Set total count
-                if (data.total_count != undefined) {
-                    if ($('#total-count')[0] != undefined) {
-                        $('#total-count')[0].innerHTML = data.total_count;
-                    } else {
-                        $('#results-header').append(' <span>(<span id="total-count">' +
-                            data.total_count + '</span>)</span>');
-                    }
-                }
-
-                // Set table headers
-                if ($('#results > thead > tr').length == 0) {
-                    var keys = Object.keys(data.results[0]);
-                    var tableHeader = '<tr>';
-
-                    if (numbered == 1) {
-                        tableHeader = tableHeader + '<th>#</th>';
-                    }
-
-                    for (var i = 0; i < keys.length; i++) {
-                        tableHeader = tableHeader + '<th><a href="?sort=' + popUi.getSort(keys[i]) +
-                            ((searchFor != null) ? '&search_for=' + searchFor : '') +
-                            ((searchBy != null) ? '&search_by=' + searchBy : '') +
-                            ((!popUi.isScroll()) ? '&scroll=0' : '') +  '">' +
-                            popUi.convertCase(keys[i]) + '</a></th>';
-                    }
-
-                    tableHeader = tableHeader + '</tr>';
-
-                    $('#results > thead').append(tableHeader);
-                    popUi.setThLinks(searchBy, searchFor);
-                }
-
-                // Set table header links
-                popUi.setThLinks(searchBy, searchFor, fields, filterQuery);
-
-                // Set result rows
-                for (var i = 0; i < data.results.length; i++) {
-                    nextRows = nextRows + '<tr>';
-                    if (numbered == 1) {
-                        var numberedValue = (popUi.isScroll()) ? (start + i) : ((i + 1) + ((page - 1) * limit));
-                        nextRows = nextRows + '<td>' + numberedValue + '</td>';
-
-                    }
-                    for (var j = 0; j < keys.length; j++) {
-                        if (keys[j] == 'id') {
-                            nextRows = nextRows + '<td>' + ((!popUi.isEmpty(data.results[i][keys[j]])) ?
-                                data.results[i][keys[j]] : '') + '</td>';
+                    // Set total count
+                    if (data.total_count != undefined) {
+                        if ($('#total-count')[0] != undefined) {
+                            $('#total-count')[0].innerHTML = data.total_count;
                         } else {
-                            nextRows = nextRows + '<td><span class="td-span">' +
-                                ((!popUi.isEmpty(data.results[i][keys[j]])) ?
-                                data.results[i][keys[j]] : '') +
-                                '</span><input type="text" class="form-control form-control-sm td-input" name="' +
-                                keys[j] + '" id="' + keys[j] + '" value="' + data.results[i][keys[j]] + '" /></td>';
+                            $('#results-header').append(' <span>(<span id="total-count">' +
+                                data.total_count + '</span>)</span>');
                         }
                     }
-                    nextRows = nextRows + '</tr>';
-                }
 
-                $('#results > tbody').append(nextRows);
-                $('#loading').hide();
-                $('#loading').css('background-image', 'none');
-            // Else, no results
-            } else {
-                if ($('#total-count')[0] != undefined) {
-                    $('#total-count')[0].innerHTML = 0;
+                    // Set table headers
+                    if ($('#results > thead > tr').length == 0) {
+                        var keys = Object.keys(data.results[0]);
+                        var tableHeader = '<tr>';
+
+                        if (numbered == 1) {
+                            tableHeader = tableHeader + '<th>#</th>';
+                        }
+
+                        for (var i = 0; i < keys.length; i++) {
+                            tableHeader = tableHeader + '<th><a href="?sort=' + popUi.getSort(keys[i]) +
+                                ((searchFor != null) ? '&search_for=' + searchFor : '') +
+                                ((searchBy != null) ? '&search_by=' + searchBy : '') +
+                                ((!popUi.isScroll()) ? '&scroll=0' : '') +  '">' +
+                                popUi.convertCase(keys[i]) + '</a></th>';
+                        }
+
+                        tableHeader = tableHeader + '</tr>';
+
+                        $('#results > thead').append(tableHeader);
+                        popUi.setThLinks(searchBy, searchFor);
+                    }
+
+                    // Set table header links
+                    popUi.setThLinks(searchBy, searchFor, fields, filterQuery);
+
+                    // Set result rows
+                    for (var i = 0; i < data.results.length; i++) {
+                        nextRows = nextRows + '<tr>';
+                        if (numbered == 1) {
+                            var numberedValue = (popUi.isScroll()) ? (start + i) : ((i + 1) + ((page - 1) * limit));
+                            nextRows = nextRows + '<td>' + numberedValue + '</td>';
+
+                        }
+                        for (var j = 0; j < keys.length; j++) {
+                            if (keys[j] == 'id') {
+                                nextRows = nextRows + '<td>' + ((!popUi.isEmpty(data.results[i][keys[j]])) ?
+                                    data.results[i][keys[j]] : '') + '</td>';
+                            } else {
+                                nextRows = nextRows + '<td><span class="td-span">' +
+                                    ((!popUi.isEmpty(data.results[i][keys[j]])) ?
+                                    data.results[i][keys[j]] : '') +
+                                    '</span><input type="text" class="form-control form-control-sm td-input" name="' +
+                                    keys[j] + '" id="' + keys[j] + '" value="' + data.results[i][keys[j]] + '" /></td>';
+                            }
+                        }
+                        nextRows = nextRows + '</tr>';
+                    }
+
+                    $('#results > tbody').append(nextRows);
+                    $('#loading').hide();
+                    $('#loading').css('background-image', 'none');
+                // Else, no results
                 } else {
-                    $('#results-header').append(' <span>(<span id="total-count">0</span>)</span>');
-                }
+                    if ($('#total-count')[0] != undefined) {
+                        $('#total-count')[0].innerHTML = 0;
+                    } else {
+                        $('#results-header').append(' <span>(<span id="total-count">0</span>)</span>');
+                    }
 
-                $('#results').hide();
-                $('#no-results').show();
+                    $('#results').hide();
+                    $('#no-results').show();
+                }
             }
-        });
+        }).fail(popUi.showError);
     },
 
     // Method to fetch results based on search criteria
@@ -329,6 +349,12 @@ var popUi = {
 
             return str.join(' ');
         }
+    },
+
+    showError : function(xhr) {
+        var json = JSON.parse(xhr.responseText);
+        $('#error > h4.error')[0].innerHTML = 'Error: ' + json.error;
+        $('#error').show();
     }
 };
 

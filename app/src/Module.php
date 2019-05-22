@@ -36,6 +36,14 @@ class Module extends \Pop\Module\Module
             );
         }
 
+        if (!empty($this->application->config['api_key'])) {
+            $this->application->setService('cookie', 'Pop\Cookie\Cookie::getInstance');
+            $cookie = $this->application->services['cookie'];
+            if (!isset($cookie['api_key'])) {
+                $cookie['api_key'] = $this->application->config['api_key'];
+            }
+        }
+
         return $this;
     }
 

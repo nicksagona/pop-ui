@@ -2,12 +2,6 @@
  * pop-ui.js
  */
 
-//$.ajaxSetup({
-//    headers : {
-//        'Authorization' : 'Bearer ab1e9733c5a39a2bdc3b3958dd62b7b94120b062'
-//    }
-//});
-
 var popUi = {
     bottom : false,
 
@@ -25,6 +19,7 @@ var popUi = {
         var numbered    = $('#results').attr('data-numbered');
         var searchFor   = (!popUi.isEmpty(popUi.getQuery('search_for'))) ? popUi.getQuery('search_for') : null;
         var searchBy    = (!popUi.isEmpty(popUi.getQuery('search_by'))) ? popUi.getQuery('search_by') : null;
+        var apiKey      = popUi.getCookie('api_key');
 
         if (searchFor != null) {
             $('#search_for').prop('value', searchFor);
@@ -40,13 +35,13 @@ var popUi = {
             $('#fields').prop('value', fields);
         }
 
+        var headers = (apiKey != '') ? { 'Authorization' : 'Bearer ' + apiKey} : {}
+
         // Set field options and checkboxes in the search form
         if ($('#search_by > option').length == 0) {
             $.ajax({
                 dataType: 'json',
-                headers: {
-                    "Authorization" : "Bearer ab1e9733c5a39a2bdc3b3958dd62b7b94120b062"
-                },
+                headers: headers,
                 url:  url + '/fields',
                 success: function (fieldsData) {
                     if (fieldsData.fields != undefined) {
@@ -112,9 +107,7 @@ var popUi = {
         // Fetch results
         $.ajax({
             dataType: 'json',
-            headers: {
-                "Authorization" : "Bearer ab1e9733c5a39a2bdc3b3958dd62b7b94120b062"
-            },
+            headers: headers,
             url:  url,
             success: function (data) {
                 // If there are results
@@ -320,6 +313,85 @@ var popUi = {
         } else {
             return vars;
         }
+    },
+
+    setCookie : function(name, value, options) {
+        if (typeof value != 'string') {
+            if (typeof value == 'number') {
+                value = value.toString();
+            } else {
+                value = JSON.stringify(value);
+            }
+        }
+        var cookie = name + '=' + encodeURI(value);
+
+        // Parse options
+        if (options != undefined) {
+            cookie += (options.domain != undefined) ? ';domain=' + options.domain : '';
+            cookie += (options.path != undefined) ? ';path=' + options.path : '';
+            if (options.expire != undefined) {
+                var expdate = new Date();
+                expdate.setDate(expdate.getDate() + options.expire);
+                cookie += ';expires=' + expdate.toGMTString();
+            }
+        }
+
+        // Set the cookie.
+        document.cookie = cookie;
+
+        return this;
+    },
+
+    // Method to get cookie
+    getCookie : function(name) {
+        var value = '';
+
+        // If the cookie is set, parse the value.
+        if (document.cookie.length > 0) {
+            if (name == null) {
+                value = {};
+                var ary = document.cookie.split(';');
+                for (var i = 0; i < ary.length; i++) {
+                    var a = ary[i].trim().split('=');
+                    var n = a[0];
+                    var v = decodeURI(a[1]);
+                    if ((v.indexOf('{') != -1) || (v.indexOf('[') != -1)) {
+                        v = JSON.parse(decodeURIComponent(v));
+                    }
+                    value[n] = v;
+                }
+            } else {
+                var start = document.cookie.indexOf(name + '=');
+
+                if (start != -1) {
+                    start = start + name.length + 1;
+                    var end = document.cookie.indexOf(';', start);
+                    if (end == -1) {
+                        end = document.cookie.length;
+                    }
+
+                    value = decodeURI(document.cookie.substring(start, end));
+                    if ((value.indexOf('{') != -1) || (value.indexOf('[') != -1)) {
+                        value = JSON.parse(decodeURIComponent(value));
+                    }
+                }
+            }
+        }
+
+        return value;
+    },
+
+    removeCookie : function(name) {
+        if (name == null) {
+            var c = this.load();
+            for (var n in c) {
+                this.save(n, '', {"expire" : -1});
+            }
+        } else {
+            this.save(name, '', {"expire" : -1});
+        }
+
+        return this
     },
 
     // Method to determine sort parameter

@@ -15,7 +15,7 @@
 <?php if (!$pageView): ?>
             <a href="/users?scroll=0" class="btn btn-sm btn-primary" title="Page View"><i class="fa fa-copy"></i></a>
 <?php else: ?>
-            <a href="/users" class="btn btn-sm btn-primary" title="Scroll View"><i class="fa  fa-angle-double-down"></i></a>
+            <a href="/users" class="btn btn-sm btn-primary" title="Scroll View"><i class="fa fa-angle-double-down"></i></a>
             <input type="hidden" name="scroll" value="0"/>
 <?php endif; ?>
             <input type="hidden" name="fields" id="fields" value="" />
@@ -43,6 +43,7 @@
     </ul>
 <?php else: ?>
     <div id="loading"></div>
+    <div id="scroll-top"><a href="#" class="btn btn-secondary btn-block btn-sm"><i class="fa fa-angle-double-up"></i></a></div>
 <?php endif; ?>
     <div id="no-results"><h4>No users were found.</h4></div>
 <?php include 'inc/footer.phtml'; ?>

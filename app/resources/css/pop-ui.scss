@@ -98,3 +98,19 @@ table th {
   border: solid 1px #ddd;
   display: none;
 }
+
+#scroll-top {
+  position: fixed;
+  margin: 0;
+  padding: 0;
+  bottom: -6px;
+  right: 2%;
+  display: block;
+  z-index: 100000;
+  background-color: #aaa;
+}
+
+#scroll-top > a {
+  color: #fff;
+  height: 32px;
+}

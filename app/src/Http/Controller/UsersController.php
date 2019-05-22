@@ -45,8 +45,7 @@ class UsersController extends AbstractController
         $this->view->filter   = $filter;
         $this->view->fields   = $fields;
         $this->view->pageView = (null !== $this->request->getQuery('scroll'));
-        $this->view->limit    = (null !== $this->request->getQuery('limit')) ?
-            (int)$this->request->getQuery('limit') : $this->application->config['limit'];
+        $this->view->limit    = $limit;
 
         if (null !== $this->request->getQuery('scroll')) {
             $apiUrl .= '/users/count';

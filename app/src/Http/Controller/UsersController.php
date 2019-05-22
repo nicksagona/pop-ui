@@ -21,6 +21,8 @@ class UsersController extends AbstractController
         $apiUrl = $this->application->config['api_url'];
         $filter = (null !== $this->request->getQuery('filter')) ? $this->request->getQuery('filter') : null;
         $fields = (null !== $this->request->getQuery('fields')) ? $this->request->getQuery('fields') : null;
+        $limit  = (null !== $this->request->getQuery('limit')) ?
+            (int)$this->request->getQuery('limit') : $this->application->config['limit'];
 
         if (null !== $filter) {
             if (is_array($filter)) {
@@ -36,14 +38,14 @@ class UsersController extends AbstractController
             $fields = (is_array($fields)) ? implode(',', $fields) : $fields;
         }
 
-        $this->view->title  = 'Users';
-        $this->view->apiUrl = $apiUrl . '/users';
-        $this->view->page   = (null !== $this->request->getQuery('page')) ? (int)$this->request->getQuery('page') : 1;
-        $this->view->sort   = (null !== $this->request->getQuery('sort')) ? $this->request->getQuery('sort') : null;
-        $this->view->filter = $filter;
-        $this->view->fields = $fields;
-        $this->view->scroll = (null !== $this->request->getQuery('scroll'));
-        $this->view->limit  = (null !== $this->request->getQuery('limit')) ?
+        $this->view->title    = 'Users';
+        $this->view->apiUrl   = $apiUrl . '/users';
+        $this->view->page     = (null !== $this->request->getQuery('page')) ? (int)$this->request->getQuery('page') : 1;
+        $this->view->sort     = (null !== $this->request->getQuery('sort')) ? $this->request->getQuery('sort') : null;
+        $this->view->filter   = $filter;
+        $this->view->fields   = $fields;
+        $this->view->pageView = (null !== $this->request->getQuery('scroll'));
+        $this->view->limit    = (null !== $this->request->getQuery('limit')) ?
             (int)$this->request->getQuery('limit') : $this->application->config['limit'];
 
         if (null !== $this->request->getQuery('scroll')) {
@@ -60,10 +62,9 @@ class UsersController extends AbstractController
                 } else {
                     $query['filter'] = $filter;
                 }
-            }
-
-            if (!empty($query)) {
                 $apiUrl .= '?' . http_build_query($query);
+            } else if (!empty($this->request->getQuery('search_by')) && !empty($this->request->getQuery('search_for'))) {
+                $apiUrl .= '?filter[]=' . $this->request->getQuery('search_by') . '+LIKE+' . $this->request->getQuery('search_for') . '%25';
             }
 
             $stream = new Stream($apiUrl);
@@ -72,7 +73,7 @@ class UsersController extends AbstractController
             if (!empty($stream->getBody())) {
                 $users = json_decode($stream->getBody(), true);
 
-                $paginator = Paginator::createRange($users['results_count'], 10, 5);
+                $paginator = Paginator::createRange($users['results_count'], $limit, 10);
                 $paginator->setClassOn('page-link')
                     ->setClassOff('page-link');
                 $paginator->setSeparator(PHP_EOL . '        ');

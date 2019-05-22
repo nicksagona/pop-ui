@@ -59,7 +59,9 @@ var popUi = {
 
                     $('#field-checkboxes input[type=checkbox]').click(function() {
                         popUi.setFields(this);
-                        popUi.fetchSearch();
+                        if (popUi.isScroll()) {
+                            popUi.fetchSearch();
+                        }
                     });
                 }
             });
@@ -126,7 +128,8 @@ var popUi = {
                     for (var i = 0; i < keys.length; i++) {
                         tableHeader = tableHeader + '<th><a href="?sort=' + popUi.getSort(keys[i]) +
                             ((searchFor != null) ? '&search_for=' + searchFor : '') +
-                            ((searchBy != null) ? '&search_by=' + searchBy : '') + '">' +
+                            ((searchBy != null) ? '&search_by=' + searchBy : '') +
+                            ((!popUi.isScroll()) ? '&scroll=0' : '') +  '">' +
                             popUi.convertCase(keys[i]) + '</a></th>';
                     }
 
@@ -143,7 +146,9 @@ var popUi = {
                 for (var i = 0; i < data.results.length; i++) {
                     nextRows = nextRows + '<tr>';
                     if (numbered == 1) {
-                        nextRows = nextRows + '<td>' + (start + i) + '</td>';
+                        var numberedValue = (popUi.isScroll()) ? (start + i) : ((i + 1) + ((page - 1) * limit));
+                        nextRows = nextRows + '<td>' + numberedValue + '</td>';
+
                     }
                     for (var j = 0; j < keys.length; j++) {
                         if (keys[j] == 'id') {
@@ -301,6 +306,11 @@ var popUi = {
         return sort;
     },
 
+    // Method to detect if the page is scroll-enabled
+    isScroll : function() {
+        return (popUi.getQuery('scroll') == undefined);
+    },
+
     // Method to convert case
     convertCase : function(str) {
         if (str == 'id') {
@@ -331,26 +341,28 @@ $(document).ready(function(){
         popUi.fetchResults();
 
         // On window scroll, fetch the next page
-        $(window).scroll(function() {
-            if (($(window).height() + $(window).scrollTop()) == $(document).height()) {
-                if (parseInt($('#total-count')[0].innerHTML) > $('#results > tbody > tr').length) {
-                    $('#loading').css('background-image', 'url(/assets/img/loading.gif)');
-                    $('#loading').show();
+        if (popUi.isScroll()) {
+            $(window).scroll(function() {
+                if (($(window).height() + $(window).scrollTop()) == $(document).height()) {
+                    if (parseInt($('#total-count')[0].innerHTML) > $('#results > tbody > tr').length) {
+                        $('#loading').css('background-image', 'url(/assets/img/loading.gif)');
+                        $('#loading').show();
 
-                    var page     = $('#results').attr('data-page');
-                    page         = parseInt(page) + 1;
+                        var page     = $('#results').attr('data-page');
+                        page         = parseInt(page) + 1;
+                        popUi.bottom = false;
+
+                        $('#results').attr('data-page', page);
+                        popUi.fetchResults();
+                    }
+                    popUi.bottom = true;
+                } else {
                     popUi.bottom = false;
-
-                    $('#results').attr('data-page', page);
-                    popUi.fetchResults();
                 }
-                popUi.bottom = true;
-            } else {
-                popUi.bottom = false;
-            }
-        });
+            });
 
-        $('#search_for').keyup(popUi.fetchSearch);
-        $('#search_by').change(popUi.fetchSearch);
+            $('#search_for').keyup(popUi.fetchSearch);
+            $('#search_by').change(popUi.fetchSearch);
+        }
     }
 });

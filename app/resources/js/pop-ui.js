@@ -142,9 +142,9 @@ var popUi = {
                             var caret = '';
 
                             if (popUi.getQuery('sort') == keys[i]) {
-                                caret = ' <i class="fa fa-caret-down"></i>';
-                            } else if (popUi.getQuery('sort') == '-' + keys[i]) {
                                 caret = ' <i class="fa fa-caret-up"></i>';
+                            } else if (popUi.getQuery('sort') == '-' + keys[i]) {
+                                caret = ' <i class="fa fa-caret-down"></i>';
                             }
 
                             tableHeader = tableHeader + '<th><a href="?sort=' + popUi.getSort(keys[i]) +

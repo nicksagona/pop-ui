@@ -139,11 +139,19 @@ var popUi = {
                         }
 
                         for (var i = 0; i < keys.length; i++) {
+                            var caret = '';
+
+                            if (popUi.getQuery('sort') == keys[i]) {
+                                caret = ' <i class="fa fa-caret-down"></i>';
+                            } else if (popUi.getQuery('sort') == '-' + keys[i]) {
+                                caret = ' <i class="fa fa-caret-up"></i>';
+                            }
+
                             tableHeader = tableHeader + '<th><a href="?sort=' + popUi.getSort(keys[i]) +
                                 ((searchFor != null) ? '&search_for=' + searchFor : '') +
                                 ((searchBy != null) ? '&search_by=' + searchBy : '') +
                                 ((!popUi.isScroll()) ? '&scroll=0' : '') +  '">' +
-                                popUi.convertCase(keys[i]) + '</a></th>';
+                                popUi.convertCase(keys[i]) + '</a>' + caret + '</th>';
                         }
 
                         tableHeader = tableHeader + '</tr>';

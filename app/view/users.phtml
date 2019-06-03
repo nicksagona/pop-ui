@@ -2,20 +2,20 @@
 <?php include 'inc/header.phtml'; ?>
     <form id="search-form" action="/users" method="get">
         <div>
-            <input class="form-control form-control-inline form-control-sm pull-right" id="search_for" name="search_for" type="text" value="" placeholder="Search..." size="20" />
+            <input tabindex="1" class="form-control form-control-inline form-control-sm pull-right" id="search_for" name="search_for" type="text" value="" placeholder="Search..." size="20" />
         </div>
         <div>
-            <select class="form-control form-control-inline form-control-sm pull-right" name="search_by" id="search_by">
+            <select tabindex="2" class="form-control form-control-inline form-control-sm pull-right" name="search_by" id="search_by">
             </select>
         </div>
         <div>
-            <button class="btn btn-sm btn-primary search-btn text-uppercase" title="Search"><i class="fa fa-search"></i></button>
-            <a class="btn btn-sm btn-primary text-uppercase" id="export-btn" href="/users/export" title="Export"><i class="fa fa-arrow-down"></i></a>
-            <a class="btn btn-sm btn-primary text-uppercase" href="/users" title="Reset"><i class="fa fa-refresh"></i></a>
+            <button tabindex="3" class="btn btn-sm btn-primary search-btn text-uppercase" title="Search"><i class="fa fa-search"></i></button>
+            <a tabindex="4" class="btn btn-sm btn-primary text-uppercase" id="export-btn" href="/users/export" title="Export"><i class="fa fa-arrow-down"></i></a>
+            <a tabindex="5" class="btn btn-sm btn-primary text-uppercase" href="/users" title="Reset"><i class="fa fa-refresh"></i></a>
 <?php if (!$pageView): ?>
-            <a href="/users?scroll=0" class="btn btn-sm btn-primary" title="Page View"><i class="fa fa-copy"></i></a>
+            <a tabindex="6" href="/users?scroll=0" class="btn btn-sm btn-primary" title="Page View"><i class="fa fa-copy"></i></a>
 <?php else: ?>
-            <a href="/users" class="btn btn-sm btn-primary" title="Scroll View"><i class="fa fa-angle-double-down"></i></a>
+            <a tabindex="6" href="/users" class="btn btn-sm btn-primary" title="Scroll View"><i class="fa fa-angle-double-down"></i></a>
             <input type="hidden" name="scroll" value="0"/>
 <?php endif; ?>
             <input type="hidden" name="fields" id="fields" value="" />

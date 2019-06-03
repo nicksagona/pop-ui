@@ -56,7 +56,7 @@ var popUi = {
                                     + popUi.convertCase(fieldsData.fields[i]) + '</option>';
                             }
 
-                            checkboxes  = checkboxes + '<span><input type="checkbox" name="fields[]" id="fields'
+                            checkboxes  = checkboxes + '<span><input tabindex="' + (i + 6).toString() + '" type="checkbox" name="fields[]" id="fields'
                                 + (i + 1) + '" value="' + fieldsData.fields[i] + '"' +
                                 (((!popUi.isEmpty(fields)) && (fields.indexOf(fieldsData.fields[i]) != -1)) ?
                                     ' checked="checked"' : '') + ' /> ' + popUi.convertCase(fieldsData.fields[i]) + '</span>';
@@ -166,27 +166,31 @@ var popUi = {
                     // Set result rows
                     for (var i = 0; i < data.results.length; i++) {
                         nextRows = nextRows + '<tr>';
+                        var numberedValue = (popUi.isScroll()) ? (start + i) : ((i + 1) + ((page - 1) * limit));
                         if (numbered == 1) {
-                            var numberedValue = (popUi.isScroll()) ? (start + i) : ((i + 1) + ((page - 1) * limit));
                             nextRows = nextRows + '<td>' + numberedValue + '</td>';
 
                         }
                         for (var j = 0; j < keys.length; j++) {
+                            var tabIndex = numberedValue.toString() + '0' + (j + 1).toString();
                             if (keys[j] == 'id') {
                                 nextRows = nextRows + '<td>' + ((!popUi.isEmpty(data.results[i][keys[j]])) ?
                                     data.results[i][keys[j]] : '') + '</td>';
                             } else {
-                                nextRows = nextRows + '<td><span class="td-span">' +
+                                nextRows = nextRows + '<td id="td-' + keys[j] + '-' + numberedValue + '"><span class="td-span">' +
                                     ((!popUi.isEmpty(data.results[i][keys[j]])) ?
-                                    data.results[i][keys[j]] : '') +
-                                    '</span><input type="text" class="form-control form-control-sm td-input" name="' +
-                                    keys[j] + '" id="' + keys[j] + '" value="' + data.results[i][keys[j]] + '" /></td>';
+                                    data.results[i][keys[j]] : '&nbsp;') +
+                                    '</span><input type="text" class="form-control form-control-sm td-input" tabindex="' + tabIndex + '" name="' +
+                                    keys[j] + '" id="' + keys[j] + '-' + numberedValue + '" value="' +
+                                    (!popUi.isEmpty(data.results[i][keys[j]]) ? data.results[i][keys[j]] : '') + '" /></td>';
                             }
                         }
                         nextRows = nextRows + '</tr>';
                     }
 
                     $('#results > tbody').append(nextRows);
+                    $('#results > tbody > tr > td > span').dblclick(popUi.showInput);
+                    $('#results > tbody > tr > td > input').keydown(popUi.tabToNextInput);
                     $('#loading').hide();
                     $('#loading').css('background-image', 'none');
                 // Else, no results
@@ -276,6 +280,55 @@ var popUi = {
             }
 
         }
+    },
+
+    // Method to show input field in
+    showInput : function() {
+        popUi.hideAllInputs();
+
+        $(this).hide();
+
+        var id    = $(this).parent().prop('id');
+        var width = parseFloat($('#' + id).css('width'));
+        $('#' + id + ' > input').css('width', (width - 25) + 'px');
+        $('#' + id + ' > input').css('display', 'inline-block');
+        $('#' + id).css('width', width + 'px');
+
+        $('#' + id + ' > input').keyup(function(){
+            $('#' + id + ' > span')[0].innerHTML = $(this).val();
+        });
+
+        $('#' + id + ' > input').focus();
+    },
+
+    // Method to hide all inputs
+    tabToNextInput : function(e) {
+        if (e.which == 9) {
+
+            popUi.hideAllInputs();
+            var tabindex = parseInt($(this).attr('tabindex')) + 1;
+
+            if ($('input[tabindex="' + tabindex.toString() + '"')[0] != undefined) {
+                var id = $('input[tabindex="' + tabindex.toString() + '"').parent().prop('id');
+                var width = parseFloat($('#' + id).css('width'));
+                $('#' + id + ' > span').hide();
+                $('#' + id + ' > input').css('width', (width - 25) + 'px');
+                $('#' + id + ' > input').css('display', 'inline-block');
+                $('#' + id).css('width', width + 'px');
+
+                $('#' + id + ' > input').keyup(function(){
+                    $('#' + id + ' > span')[0].innerHTML = $(this).val();
+                });
+
+                $('#' + id + ' > input').focus();
+            }
+        }
+    },
+
+    // Method to hide all inputs
+    hideAllInputs : function() {
+        $('#results > tbody > tr > td > span').show();
+        $('#results > tbody > tr > td > input').hide();
     },
 
     // Method to check if value is truly empty
@@ -479,5 +532,12 @@ $(document).ready(function(){
                 return false;
             });
         }
+
+        // On ESC
+        $(document).keydown(function(e){
+            if (e.which == 27) {
+                popUi.hideAllInputs();
+            }
+        });
     }
 });

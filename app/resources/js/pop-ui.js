@@ -17,6 +17,7 @@ var popUi = {
         var filterAry   = [];
         var filterQuery = '';
         var numbered    = $('#results').attr('data-numbered');
+        var edit        = $('#results').attr('data-edit');
         var searchFor   = (!popUi.isEmpty(popUi.getQuery('search_for'))) ? popUi.getQuery('search_for') : null;
         var searchBy    = (!popUi.isEmpty(popUi.getQuery('search_by'))) ? popUi.getQuery('search_by') : null;
         var apiKey      = popUi.getCookie('api_key');
@@ -131,7 +132,7 @@ var popUi = {
 
                     // Set table headers
                     if ($('#results > thead > tr').length == 0) {
-                        var keys = Object.keys(data.results[0]);
+                        var keys        = Object.keys(data.results[0]);
                         var tableHeader = '<tr>';
 
                         if (numbered == 1) {
@@ -177,20 +178,26 @@ var popUi = {
                                 nextRows = nextRows + '<td>' + ((!popUi.isEmpty(data.results[i][keys[j]])) ?
                                     data.results[i][keys[j]] : '') + '</td>';
                             } else {
+                                var input = '';
+                                if (edit == 1) {
+                                    input = '<input type="text" class="form-control form-control-sm td-input" tabindex="' + tabIndex + '" name="' +
+                                        keys[j] + '" id="' + keys[j] + '-' + numberedValue + '" value="' +
+                                        (!popUi.isEmpty(data.results[i][keys[j]]) ? data.results[i][keys[j]] : '') + '" />';
+                                }
                                 nextRows = nextRows + '<td id="td-' + keys[j] + '-' + numberedValue + '"><span class="td-span">' +
                                     ((!popUi.isEmpty(data.results[i][keys[j]])) ?
-                                    data.results[i][keys[j]] : '&nbsp;') +
-                                    '</span><input type="text" class="form-control form-control-sm td-input" tabindex="' + tabIndex + '" name="' +
-                                    keys[j] + '" id="' + keys[j] + '-' + numberedValue + '" value="' +
-                                    (!popUi.isEmpty(data.results[i][keys[j]]) ? data.results[i][keys[j]] : '') + '" /></td>';
+                                        data.results[i][keys[j]] : '&nbsp;') +
+                                    '</span>' + input + ' </td>';
                             }
                         }
                         nextRows = nextRows + '</tr>';
                     }
 
                     $('#results > tbody').append(nextRows);
-                    $('#results > tbody > tr > td > span').dblclick(popUi.showInput);
-                    $('#results > tbody > tr > td > input').keydown(popUi.tabToNextInput);
+                    if (edit == 1) {
+                        $('#results > tbody > tr > td > span').dblclick(popUi.showInput);
+                        $('#results > tbody > tr > td > input').keyup(popUi.tabToNextInput);
+                    }
                     $('#loading').hide();
                     $('#loading').css('background-image', 'none');
                 // Else, no results
@@ -304,10 +311,9 @@ var popUi = {
     // Method to hide all inputs
     tabToNextInput : function(e) {
         if (e.which == 9) {
-
             popUi.hideAllInputs();
             var tabindex = parseInt($(this).attr('tabindex')) + 1;
-
+            console.log(tabindex);
             if ($('input[tabindex="' + tabindex.toString() + '"')[0] != undefined) {
                 var id = $('input[tabindex="' + tabindex.toString() + '"').parent().prop('id');
                 var width = parseFloat($('#' + id).css('width'));
@@ -319,7 +325,6 @@ var popUi = {
                 $('#' + id + ' > input').keyup(function(){
                     $('#' + id + ' > span')[0].innerHTML = $(this).val();
                 });
-
                 $('#' + id + ' > input').focus();
             }
         }

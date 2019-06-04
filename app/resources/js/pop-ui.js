@@ -37,7 +37,7 @@ var popUi = {
             $('#fields').prop('value', fields);
         }
 
-        var headers = (apiKey != '') ? { 'Authorization' : 'Bearer ' + apiKey} : {}
+        var headers = (apiKey != '') ? { 'Authorization' : 'Bearer ' + apiKey} : {};
 
         // Set field options and checkboxes in the search form
         if ($('#search_by > option').length == 0) {
@@ -165,6 +165,7 @@ var popUi = {
 
                     // Set table header links
                     popUi.setThLinks(searchBy, searchFor, fields, filterQuery);
+                    var hasId = false;
 
                     // Set result rows
                     for (var i = 0; i < data.results.length; i++) {
@@ -175,15 +176,15 @@ var popUi = {
 
                         }
                         for (var j = 0; j < keys.length; j++) {
-
                             if (keys[j] == 'id') {
                                 nextRows = nextRows + '<td>' + ((!popUi.isEmpty(data.results[i][keys[j]])) ?
                                     data.results[i][keys[j]] : '') + '</td>';
                             } else {
                                 var input = '';
-                                if (edit == 1) {
-                                    input = '<input type="text" class="form-control form-control-sm td-input" tabindex="' + popUi.tabIndex++ + '" name="' +
-                                        keys[j] + '" id="' + keys[j] + '-' + numberedValue + '" value="' +
+                                if ((edit == 1) && (data.results[i]['id'] != undefined)) {
+                                    hasId = true;
+                                    input = '<input type="text" class="form-control form-control-sm td-input" tabindex="' + popUi.tabIndex++ +
+                                        '" name="' + keys[j] + '" id="' + keys[j] + '-' + numberedValue + '" data-id="' + data.results[i]['id'] + '" value="' +
                                         (!popUi.isEmpty(data.results[i][keys[j]]) ? data.results[i][keys[j]] : '') + '" />';
                                 }
                                 nextRows = nextRows + '<td id="td-' + keys[j] + '-' + numberedValue + '"><span class="td-span">' +
@@ -196,7 +197,7 @@ var popUi = {
                     }
 
                     $('#results > tbody').append(nextRows);
-                    if (edit == 1) {
+                    if ((edit == 1) && (hasId)) {
                         $('#results > tbody > tr > td > span').dblclick(popUi.showInput);
                         $('#results > tbody > tr > td > input').keydown(popUi.tabToNextInput);
                     }
@@ -313,6 +314,10 @@ var popUi = {
     // Method to hide all inputs
     tabToNextInput : function(e) {
         if (e.which == 9) {
+            if ($(this)[0].defaultValue != $(this).val()) {
+                popUi.saveEdit();
+            }
+
             popUi.hideAllInputs();
 
             var tabindex = (e.shiftKey) ? parseInt($(this).attr('tabindex')) - 1 : parseInt($(this).attr('tabindex')) + 1;
@@ -340,6 +345,29 @@ var popUi = {
     hideAllInputs : function() {
         $('#results > tbody > tr > td > span').show();
         $('#results > tbody > tr > td > input').hide();
+    },
+
+    // Method to save current edit
+    saveEdit : function() {
+        var id      = $(':focus').data('id');
+        var field   = $(':focus').prop('name');
+        var value   = $(':focus').val();
+        var url     = $('#results').attr('data-url');
+        var apiKey  = popUi.getCookie('api_key');
+        var headers = (apiKey != '') ? { 'Authorization' : 'Bearer ' + apiKey} : {};
+        var data    = {};
+
+        $(':focus')[0].defaultValue = value;
+        data[field] = value;
+
+        $.ajax({
+            dataType: 'json',
+            method: 'PUT',
+            headers: headers,
+            contentType: 'application/json',
+            url:  url + '/' + id,
+            data: JSON.stringify(data)
+        }).fail(popUi.showError);
     },
 
     // Method to check if value is truly empty
@@ -497,6 +525,8 @@ var popUi = {
 
     showError : function(xhr) {
         var json = JSON.parse(xhr.responseText);
+        $('#results').hide();
+        $('#no-results').hide();
         $('#error > h4.error')[0].innerHTML = 'Error: ' + json.error;
         $('#error').show();
     }
@@ -546,7 +576,10 @@ $(document).ready(function(){
 
         // On ESC
         $(document).keydown(function(e){
-            if (e.which == 27) {
+            if ((e.which == 27) || (e.which == 13)) {
+                if ($(':focus')[0].defaultValue != $(':focus').val()) {
+                    popUi.saveEdit();
+                }
                 popUi.hideAllInputs();
             }
         });

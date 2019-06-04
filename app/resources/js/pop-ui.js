@@ -3,7 +3,8 @@
  */
 
 var popUi = {
-    bottom : false,
+    bottom   : false,
+    tabIndex : 10001,
 
     // Main method fo fetch results
     fetchResults : function() {
@@ -134,6 +135,7 @@ var popUi = {
                     if ($('#results > thead > tr').length == 0) {
                         var keys        = Object.keys(data.results[0]);
                         var tableHeader = '<tr>';
+                        var tabIndex    = 7;
 
                         if (numbered == 1) {
                             tableHeader = tableHeader + '<th>#</th>';
@@ -148,7 +150,7 @@ var popUi = {
                                 caret = ' <i class="fa fa-caret-down"></i>';
                             }
 
-                            tableHeader = tableHeader + '<th><a href="?sort=' + popUi.getSort(keys[i]) +
+                            tableHeader = tableHeader + '<th><a tabindex="' + tabIndex++ + '" href="?sort=' + popUi.getSort(keys[i]) +
                                 ((searchFor != null) ? '&search_for=' + searchFor : '') +
                                 ((searchBy != null) ? '&search_by=' + searchBy : '') +
                                 ((!popUi.isScroll()) ? '&scroll=0' : '') +  '">' +
@@ -173,14 +175,14 @@ var popUi = {
 
                         }
                         for (var j = 0; j < keys.length; j++) {
-                            var tabIndex = numberedValue.toString() + '0' + (j + 1).toString();
+
                             if (keys[j] == 'id') {
                                 nextRows = nextRows + '<td>' + ((!popUi.isEmpty(data.results[i][keys[j]])) ?
                                     data.results[i][keys[j]] : '') + '</td>';
                             } else {
                                 var input = '';
                                 if (edit == 1) {
-                                    input = '<input type="text" class="form-control form-control-sm td-input" tabindex="' + tabIndex + '" name="' +
+                                    input = '<input type="text" class="form-control form-control-sm td-input" tabindex="' + popUi.tabIndex++ + '" name="' +
                                         keys[j] + '" id="' + keys[j] + '-' + numberedValue + '" value="' +
                                         (!popUi.isEmpty(data.results[i][keys[j]]) ? data.results[i][keys[j]] : '') + '" />';
                                 }
@@ -196,7 +198,7 @@ var popUi = {
                     $('#results > tbody').append(nextRows);
                     if (edit == 1) {
                         $('#results > tbody > tr > td > span').dblclick(popUi.showInput);
-                        $('#results > tbody > tr > td > input').keyup(popUi.tabToNextInput);
+                        $('#results > tbody > tr > td > input').keydown(popUi.tabToNextInput);
                     }
                     $('#loading').hide();
                     $('#loading').css('background-image', 'none');
@@ -312,8 +314,9 @@ var popUi = {
     tabToNextInput : function(e) {
         if (e.which == 9) {
             popUi.hideAllInputs();
-            var tabindex = parseInt($(this).attr('tabindex')) + 1;
-            console.log(tabindex);
+
+            var tabindex = (e.shiftKey) ? parseInt($(this).attr('tabindex')) - 1 : parseInt($(this).attr('tabindex')) + 1;
+
             if ($('input[tabindex="' + tabindex.toString() + '"')[0] != undefined) {
                 var id = $('input[tabindex="' + tabindex.toString() + '"').parent().prop('id');
                 var width = parseFloat($('#' + id).css('width'));
@@ -325,7 +328,10 @@ var popUi = {
                 $('#' + id + ' > input').keyup(function(){
                     $('#' + id + ' > span')[0].innerHTML = $(this).val();
                 });
-                $('#' + id + ' > input').focus();
+                $(this).blur(function(){
+                    $('#' + id + ' > input').focus();
+                });
+
             }
         }
     },

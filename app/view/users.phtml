@@ -9,25 +9,28 @@
             </select>
         </div>
         <div>
-            <button tabindex="3" class="btn btn-sm btn-primary search-btn text-uppercase" title="Search"><i class="fa fa-search"></i></button>
-            <a tabindex="4" class="btn btn-sm btn-primary text-uppercase" id="export-btn" href="/users/export" title="Export"><i class="fa fa-arrow-down"></i></a>
-            <a tabindex="5" class="btn btn-sm btn-primary text-uppercase" href="/users" title="Reset"><i class="fa fa-refresh"></i></a>
+            <input tabindex="3" class="form-control form-control-inline form-control-sm pull-right limit-input" id="limit" name="limit" type="text" value="<?=$limit; ?>" size="3" />
+        </div>
+        <div>
+            <button tabindex="4" class="btn btn-sm btn-primary search-btn text-uppercase" title="Search"><i class="fa fa-search"></i></button>
+            <a tabindex="5" class="btn btn-sm btn-primary text-uppercase" id="export-btn" href="/users/export" title="Export"><i class="fa fa-arrow-down"></i></a>
+            <a tabindex="6" class="btn btn-sm btn-primary text-uppercase" href="/users" title="Reset"><i class="fa fa-refresh"></i></a>
 <?php if (!$pageView): ?>
-            <a tabindex="6" href="/users?scroll=0" class="btn btn-sm btn-primary" title="Page View"><i class="fa fa-copy"></i></a>
+            <a tabindex="7" href="/users?scroll=0" class="btn btn-sm btn-primary" title="Page View"><i class="fa fa-copy"></i></a>
 <?php else: ?>
-            <a tabindex="6" href="/users" class="btn btn-sm btn-primary" title="Scroll View"><i class="fa fa-angle-double-down"></i></a>
+            <a tabindex="7" href="/users" class="btn btn-sm btn-primary" title="Scroll View"><i class="fa fa-angle-double-down"></i></a>
             <input type="hidden" name="scroll" value="0"/>
 <?php endif; ?>
             <input type="hidden" name="fields" id="fields" value="" />
         </div>
     </form>
     <div id="field-checkboxes">
+        <span><input tabindex="8" type="checkbox" name="numbered" id="numbered" />#</span>
     </div>
     <h1 id="results-header"><?=$title; ?></h1>
     <table id="results" class="table table-bordered table-striped table-hover"
            data-url="<?=$apiUrl; ?>"
            data-page="<?=(int)$page; ?>"
-           data-limit="<?=(int)$limit; ?>"
            data-sort="<?=$sort; ?>"
            data-filter="<?=(!empty($filter) && is_array($filter)) ? implode(',', $filter) : $filter; ?>"
            data-fields="<?=$fields; ?>"

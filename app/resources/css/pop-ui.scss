@@ -36,6 +36,22 @@ table th {
   width: auto;
 }
 
+.limit-input {
+  text-align: center;
+  width: 35px;
+}
+
+.th-number {
+  width: 3%;
+  text-align: right;
+  color: #aaa;
+}
+
+.td-number {
+  color: #aaa;
+  text-align: right;
+}
+
 .td-span {
   display: block;
   min-width: 50px;

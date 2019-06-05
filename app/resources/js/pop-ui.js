@@ -10,7 +10,7 @@ var popUi = {
     fetchResults : function() {
         var url         = $('#results').attr('data-url');
         var page        = $('#results').attr('data-page');
-        var limit       = $('#results').attr('data-limit');
+        var limit       = $('#limit').val();
         var sort        = $('#results').attr('data-sort');
         var filter      = $('#results').attr('data-filter');
         var fields      = $('#results').attr('data-fields');
@@ -22,6 +22,12 @@ var popUi = {
         var searchFor   = (!popUi.isEmpty(popUi.getQuery('search_for'))) ? popUi.getQuery('search_for') : null;
         var searchBy    = (!popUi.isEmpty(popUi.getQuery('search_by'))) ? popUi.getQuery('search_by') : null;
         var apiKey      = popUi.getCookie('api_key');
+
+        if (numbered == 1) {
+            $('#numbered').prop('checked', true);
+        } else {
+            $('#numbered').prop('checked', false);
+        }
 
         if (searchFor != null) {
             $('#search_for').prop('value', searchFor);
@@ -51,14 +57,13 @@ var popUi = {
                         var checkboxes  = '';
 
                         for (var i = 0; i < fieldsData.fields.length; i++) {
-
                             if (fieldsData.fields[i] != 'id') {
                                 options = options + '<option value="' + fieldsData.fields[i] + '"' +
                                     ((searchBy == fieldsData.fields[i]) ? ' selected="selected"' : '') + '>'
                                     + popUi.convertCase(fieldsData.fields[i]) + '</option>';
                             }
 
-                            checkboxes  = checkboxes + '<span><input tabindex="' + (i + 6).toString() + '" type="checkbox" name="fields[]" id="fields'
+                            checkboxes  = checkboxes + '<span><input tabindex="' + (i + 9).toString() + '" type="checkbox" name="fields[]" id="fields'
                                 + (i + 1) + '" value="' + fieldsData.fields[i] + '"' +
                                 (((!popUi.isEmpty(fields)) && (fields.indexOf(fieldsData.fields[i]) != -1)) ?
                                     ' checked="checked"' : '') + ' /> ' + popUi.convertCase(fieldsData.fields[i]) + '</span>';
@@ -66,10 +71,22 @@ var popUi = {
                         $('#field-checkboxes').append(checkboxes);
                         $('#search_by').append(options);
 
-                        $('#field-checkboxes input[type=checkbox]').click(function() {
-                            popUi.setFields(this);
+                        $('#numbered').click(function() {
+                            if ($(this).prop('checked')) {
+                                $('#results').attr('data-numbered', 1);
+                            } else {
+                                $('#results').attr('data-numbered', 0);
+                            }
                             if (popUi.isScroll()) {
                                 popUi.fetchSearch();
+                            }
+                        });
+                        $('#field-checkboxes input[type=checkbox]').click(function() {
+                            if ($(this).prop('id') != 'numbered') {
+                                popUi.setFields(this);
+                                if (popUi.isScroll()) {
+                                    popUi.fetchSearch();
+                                }
                             }
                         });
                     }
@@ -138,7 +155,7 @@ var popUi = {
                         var tabIndex    = 7;
 
                         if (numbered == 1) {
-                            tableHeader = tableHeader + '<th>#</th>';
+                            tableHeader = tableHeader + '<th class="th-number">#</th>';
                         }
 
                         for (var i = 0; i < keys.length; i++) {
@@ -172,7 +189,7 @@ var popUi = {
                         nextRows = nextRows + '<tr>';
                         var numberedValue = (popUi.isScroll()) ? (start + i) : ((i + 1) + ((page - 1) * limit));
                         if (numbered == 1) {
-                            nextRows = nextRows + '<td>' + numberedValue + '</td>';
+                            nextRows = nextRows + '<td class="td-number">' + numberedValue + '</td>';
 
                         }
                         for (var j = 0; j < keys.length; j++) {
@@ -567,6 +584,7 @@ $(document).ready(function(){
 
             $('#search_for').keyup(popUi.fetchSearch);
             $('#search_by').change(popUi.fetchSearch);
+            $('#limit').change(popUi.fetchSearch);
 
             $('#scroll-top > a').click(function(){
                 $('html, body').animate({scrollTop : 0}, 500);

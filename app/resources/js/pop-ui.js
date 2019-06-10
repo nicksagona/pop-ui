@@ -57,11 +57,12 @@ var popUi = {
                                     + popUi.convertCase(fieldsData.fields[i]) + '</option>';
                             }
 
-                            checkboxes  = checkboxes + '<span><input tabindex="' + (i + 9).toString() + '" type="checkbox" name="fields[]" id="fields'
-                                + (i + 1) + '" value="' + fieldsData.fields[i] + '"' +
+                            checkboxes = checkboxes + '<span><input tabindex="' + (i + 9).toString() +
+                                '" type="checkbox" name="fields[]" id="fields' + (i + 1) + '" value="' + fieldsData.fields[i] + '"' +
                                 (((!popUi.isEmpty(fields)) && (fields.indexOf(fieldsData.fields[i]) != -1)) ?
                                     ' checked="checked"' : '') + ' /> ' + popUi.convertCase(fieldsData.fields[i]) + '</span>';
                         }
+
                         $('#field-checkboxes').append(checkboxes);
                         $('#search_by').append(options);
 

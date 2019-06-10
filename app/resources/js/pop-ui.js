@@ -23,12 +23,6 @@ var popUi = {
         var searchBy    = (!popUi.isEmpty(popUi.getQuery('search_by'))) ? popUi.getQuery('search_by') : null;
         var apiKey      = popUi.getCookie('api_key');
 
-        if (numbered == 1) {
-            $('#numbered').prop('checked', true);
-        } else {
-            $('#numbered').prop('checked', false);
-        }
-
         if (searchFor != null) {
             $('#search_for').prop('value', searchFor);
         } else if ($('#search_for').prop('value') != '') {
@@ -71,22 +65,10 @@ var popUi = {
                         $('#field-checkboxes').append(checkboxes);
                         $('#search_by').append(options);
 
-                        $('#numbered').click(function() {
-                            if ($(this).prop('checked')) {
-                                $('#results').attr('data-numbered', 1);
-                            } else {
-                                $('#results').attr('data-numbered', 0);
-                            }
+                        $('#field-checkboxes input[type=checkbox]').click(function() {
+                            popUi.setFields(this);
                             if (popUi.isScroll()) {
                                 popUi.fetchSearch();
-                            }
-                        });
-                        $('#field-checkboxes input[type=checkbox]').click(function() {
-                            if ($(this).prop('id') != 'numbered') {
-                                popUi.setFields(this);
-                                if (popUi.isScroll()) {
-                                    popUi.fetchSearch();
-                                }
                             }
                         });
                     }
@@ -182,6 +164,7 @@ var popUi = {
 
                     // Set table header links
                     popUi.setThLinks(searchBy, searchFor, fields, filterQuery);
+
                     var hasId = false;
 
                     // Set result rows
